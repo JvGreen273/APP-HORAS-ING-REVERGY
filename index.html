@@ -70,6 +70,59 @@
     .canva-name { font-size: 0.75em; font-weight: 600; color: #fff; white-space: nowrap; }
     .canva-pct { background: var(--primary); color: #000; padding: 1px 5px; border-radius: 5px; font-size: 0.7em; font-weight: bold; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* --- FAVORITOS --- */
+    .btn-fav {
+        background: none; border: none; font-size: 1.2em; cursor: pointer;
+        padding: 4px 6px; border-radius: 8px; transition: 0.2s;
+        filter: grayscale(1) opacity(0.5);
+    }
+    .btn-fav:hover { filter: none; transform: scale(1.3); box-shadow: none; }
+    .btn-fav.saved { filter: none; }
+    #favPanel {
+        background: rgba(79,172,254,0.07); border: 1px solid rgba(79,172,254,0.25);
+        border-radius: 14px; padding: 14px 16px; margin-top: 10px;
+    }
+    .fav-item {
+        display: flex; align-items: center; justify-content: space-between;
+        background: rgba(255,255,255,0.04); border-radius: 10px;
+        padding: 8px 12px; margin-bottom: 7px; gap: 10px; flex-wrap: wrap;
+    }
+    .fav-item span { font-size: 0.82em; color: #ccc; flex: 1; }
+    .fav-item strong { color: var(--secondary); font-size: 0.88em; }
+    .fav-use-btn {
+        background: linear-gradient(90deg, var(--secondary), var(--primary));
+        color: #000; border: none; border-radius: 20px; padding: 5px 14px;
+        font-size: 0.78em; font-weight: bold; cursor: pointer; white-space: nowrap;
+    }
+    .fav-use-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,242,254,0.3); }
+    .fav-del-btn {
+        background: var(--danger); color: #fff; border: none; border-radius: 20px;
+        padding: 5px 10px; font-size: 0.75em; cursor: pointer;
+    }
+
+    /* --- TOAST --- */
+    #toastContainer {
+        position: fixed; bottom: 28px; right: 28px;
+        display: flex; flex-direction: column; gap: 10px;
+        z-index: 9999; pointer-events: none;
+    }
+    .toast {
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 18px; border-radius: 14px;
+        font-size: 0.88em; font-weight: 500;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+        animation: toastIn 0.3s ease;
+        pointer-events: auto;
+        max-width: 320px;
+    }
+    .toast.success { background: rgba(46,204,113,0.18); border: 1px solid rgba(46,204,113,0.45); color: #2ecc71; }
+    .toast.error   { background: rgba(255,75,43,0.18);  border: 1px solid rgba(255,75,43,0.45);  color: #ff6b55; }
+    .toast.info    { background: rgba(79,172,254,0.18); border: 1px solid rgba(79,172,254,0.45); color: #4facfe; }
+    .toast.warning { background: rgba(255,165,2,0.18);  border: 1px solid rgba(255,165,2,0.45);  color: #ffa502; }
+    @keyframes toastIn  { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+    @keyframes toastOut { from { opacity:1; transform: translateY(0); }    to { opacity:0; transform: translateY(16px); } }
 </style>
 </head>
 <body>
@@ -134,6 +187,8 @@
                 <option value="DD-CFM">DD-CFM</option>
                 <option value="JNK-MLG-01">JNK-MLG-01</option>
                 <option value="EDF-BSL6">EDF-BSL6</option>
+                <option value="SDI2">SDI2 - Sol de Inirida 2</option>
+                <option value="BSL6">BSL6 - Bosques Solares de Los Llanos 6</option>
                 <option value="ING">ING</option>
             </select>
             <select id="codPC">
@@ -150,7 +205,15 @@
             <textarea id="desc" placeholder="Descripción detallada..." style="grid-column: 1 / -1; height:60px"></textarea>
             <button onclick="save()" style="grid-column: 1 / -1">💾 Guardar Actividad</button>
         </div>
-    </div>
+        <!-- PANEL DE FAVORITOS -->
+        <div id="favPanel" class="hidden" style="margin-top:14px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <span style="font-size:1.1em">⭐</span>
+                <strong style="color:var(--secondary); font-size:0.9em">Mis Favoritos</strong>
+                <span style="font-size:0.75em; color:#888; margin-left:4px">— Carga rápida, solo cambia la fecha</span>
+            </div>
+            <div id="favList"></div>
+        </div>
 
     <div id="pmTools" class="hidden glass">
         <h3>Herramientas de Gestión (PM)</h3>
@@ -209,8 +272,25 @@
     </div>
 </div>
 
+<div id="toastContainer"></div>
+
 <script>
     const $=id=>document.getElementById(id);
+
+    // --- TOAST ---
+    function toast(msg, tipo='success', duracion=3200) {
+        const c = $('toastContainer');
+        const t = document.createElement('div');
+        const iconos = { success:'✓', error:'✕', info:'ℹ', warning:'⚠' };
+        t.className = `toast ${tipo}`;
+        t.innerHTML = `<span style="font-size:1.1em">${iconos[tipo]||'✓'}</span><span>${msg}</span>`;
+        c.appendChild(t);
+        setTimeout(() => {
+            t.style.animation = 'toastOut 0.3s ease forwards';
+            setTimeout(() => t.remove(), 300);
+        }, duracion);
+    }
+
     const META = 6; const PM_KEY = "Revergy+";
     const DB_URL = "https://revergypro-1c325-default-rtdb.firebaseio.com";
 
@@ -252,16 +332,16 @@
 
     function handleAuth() {
         const u=$('authUser').value.trim(), p=$('authPass').value, r=$('authRol').value, c=$('authCode').value;
-        if(!u||!p) return alert("Faltan datos");
+        if(!u||!p) return toast("Faltan datos para continuar","error");
         if(!$('regFields').classList.contains('hidden')){
-            if(dbU.find(x=>x.user===u)) return alert("Existe");
-            if(r==='pm'&&c!==PM_KEY) return alert("Código PM");
+            if(dbU.find(x=>x.user===u)) return toast("Este usuario ya existe","error");
+            if(r==='pm'&&c!==PM_KEY) return toast("Código de autorización incorrecto","error");
             const newUser = {user:u,pass:p,rol:r,id:Date.now()};
             dbU.push(newUser); syncCloud('usuarios', newUser);
-            alert("Registrado"); switchAuth('login');
+            toast("¡Registro exitoso! Ya puedes ingresar","success"); switchAuth('login');
         } else {
             const l=dbU.find(x=>x.user===u&&x.pass===p);
-            if(!l) return alert("Error");
+            if(!l) return toast("Usuario o contraseña incorrectos","error");
             user=l; localStorage.setItem("sesion_activa", JSON.stringify(l)); init();
         }
     }
@@ -273,6 +353,7 @@
             if(user.rol==='pm'){ $('pmTools').classList.remove('hidden'); fillIngs(); }
             else { $('chartIngBox').classList.add('hidden'); $('ingSel').innerHTML=`<option>${user.user}</option>`; $('ingSel').disabled=true; }
             render();
+            renderFavPanel();
         }
     }
 
@@ -290,6 +371,8 @@
         let opciones = [];
         if (principal === "JNK-MLG-01") opciones = ["JNK-MLG-01-Gestión", "JNK-MLG-01-Ingeniería", "JNK-MLG-01-MesaTrabajo", "JNK-MLG-01-Previos"];
         else if (principal === "EDF-BSL6") opciones = ["EDF-BSL6-Gestión", "EDF-BSL6-Ingeniería", "EDF-BSL6-MesaTrabajo", "EDF-BSL6-Previos"];
+        else if (principal === "SDI2") opciones = ["SDI2-Gestión", "SDI2-Ingeniería", "SDI2-MesaTrabajo", "SDI2-Previos"];
+        else if (principal === "BSL6") opciones = ["BSL6-Gestión", "BSL6-Ingeniería", "BSL6-MesaTrabajo", "BSL6-Previos"];
         else if (principal === "ING") opciones = ["GST-ING", "OFC-ING", "CLD-ING", "OFT-ING", "CAP-ING", "LCC"];
         else if (principal !== "") opciones = [principal + "-P+C"];
         opciones.forEach(opt => {
@@ -300,11 +383,11 @@
     function save() {
         const proyectoFinal = `${$('codProy').value} | ${$('codPC').value}`;
         const r={id:editId||Date.now(),ing:$('ingSel').value,proy:proyectoFinal,fecha:$('fecha').value,horas:Number($('horas').value),act:$('act').value,desc:$('desc').value};
-        if(!r.ing||!r.fecha||!r.horas) return alert("Datos incompletos");
+        if(!r.ing||!r.fecha||!r.horas) return toast("Completa todos los campos requeridos","warning");
         editId ? dbR=dbR.map(x=>x.id===editId?r:x) : dbR.push(r);
         localStorage.setItem("db_registros", JSON.stringify(dbR));
         syncCloud('actividades', r);
-        editId=null; clean(); render();
+        const msg = editId ? "Registro actualizado correctamente" : "Actividad guardada correctamente"; editId=null; clean(); render(); toast(msg, "success");
     }
 
     function clean() { $('codProy').value=""; $('fecha').value=$('horas').value=$('act').value=$('desc').value=""; }
@@ -337,8 +420,13 @@
         let h="<table><tr><th>Ingeniero</th><th>Proyecto</th><th>Fecha</th><th>Horas</th><th>Actividad</th><th>Acciones</th></tr>";
         d.forEach(r=>{
             const c=r.horas>=META;
+            const isFav = isFavorito(r);
             h+=`<tr><td>${r.ing}</td><td>${r.proy}</td><td>${r.fecha}</td><td class="${c?'meta-cumplida':'meta-baja'}">${r.horas}h</td><td>${r.act}</td>
-            <td><button onclick="editR(${r.id})" style="padding:5px; width:auto">✏️</button><button onclick="delR(${r.id})" style="background:var(--danger);padding:5px; width:auto">🗑️</button></td></tr>`;
+            <td style="display:flex;gap:4px;align-items:center;">
+              <button class="btn-fav ${isFav?'saved':''}" title="${isFav?'Quitar favorito':'Guardar como favorito'}" onclick="toggleFav(${r.id})">${isFav?'⭐':'☆'}</button>
+              <button onclick="editR(${r.id})" style="padding:5px; width:auto">✏️</button>
+              <button onclick="delR(${r.id})" style="background:var(--danger);padding:5px; width:auto">🗑️</button>
+            </td></tr>`;
         });
         $('tablaD').innerHTML=h+"</table>";
     }
@@ -350,7 +438,7 @@
     };
 
     window.delR=async id=>{ 
-        if(confirm("¿Borrar?")){ 
+        if(confirm("¿Seguro que deseas eliminar este registro?")){ 
             dbR=dbR.filter(x=>x.id!==id); localStorage.setItem("db_registros",JSON.stringify(dbR)); 
             await fetch(`${DB_URL}/actividades/${id}.json`, { method: 'DELETE' }); render(); 
         }
@@ -395,25 +483,90 @@
         a.download = `Backup_${user.user}.json`; a.click();
     }
 
-    function importarBackup(e) {
-        const f = e.target.files; if(!f) return;
-        const r = new FileReader(); r.onload = (ev) => {
+    async function importarBackup(e) {
+        // Solo el PM puede importar y sincronizar
+        if(user.rol !== 'pm') return toast("Solo un PM puede importar y sincronizar datos","error");
+
+        const f = e.target.files[0]; // BUG FIX: era .files sin índice
+        if(!f) return;
+
+        const r = new FileReader();
+        r.onload = async (ev) => {
             try {
                 const d = JSON.parse(ev.target.result);
-                if(d.usuarios) d.usuarios.forEach(u=>{ if(!dbU.find(x=>x.user===u.user)) dbU.push(u); });
-                if(d.registros) d.registros.forEach(re=>{ if(!dbR.find(x=>x.id===re.id)) dbR.push(re); });
+
+                // --- 1. Merge usuarios sin duplicar ---
+                let nuevosU = 0;
+                if(d.usuarios) {
+                    d.usuarios.forEach(u => {
+                        if(!dbU.find(x => x.user === u.user)) {
+                            dbU.push(u);
+                            nuevosU++;
+                        }
+                    });
+                }
+
+                // --- 2. Merge registros sin duplicar ---
+                let nuevosR = 0;
+                if(d.registros) {
+                    d.registros.forEach(re => {
+                        if(!dbR.find(x => x.id === re.id)) {
+                            dbR.push(re);
+                            nuevosR++;
+                        }
+                    });
+                }
+
+                // --- 3. Guardar en localStorage ---
                 localStorage.setItem("db_usuarios", JSON.stringify(dbU));
                 localStorage.setItem("db_registros", JSON.stringify(dbR));
+
+                // --- 4. Subir TODO a Firebase para que todos los usuarios lo vean ---
+                // BUG FIX ORIGINAL: antes solo guardaba local, nunca subía a Firebase
+                toast(`Sincronizando... ${nuevosU} usuarios · ${nuevosR} registros nuevos`,"info", 5000);
+
+                const uploads = [];
+
+                // Subir usuarios nuevos
+                dbU.forEach(u => {
+                    uploads.push(
+                        fetch(`${DB_URL}/usuarios/${u.id || u.user}.json`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ...u, sync_ts: new Date().toISOString() })
+                        })
+                    );
+                });
+
+                // Subir registros nuevos
+                dbR.forEach(re => {
+                    uploads.push(
+                        fetch(`${DB_URL}/actividades/${re.id}.json`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ ...re, sync_ts: new Date().toISOString() })
+                        })
+                    );
+                });
+
+                await Promise.all(uploads);
+
+                toast(`✅ Importación completada: ${nuevosU} usuarios · ${nuevosR} registros subidos a Firebase`,"success", 5000);
                 location.reload();
-            } catch(e) { alert("Error"); }
-        }; r.readAsText(f);
+
+            } catch(err) {
+                console.error(err);
+                toast("Error al importar. Verifica que el archivo sea un backup válido","error");
+            }
+        };
+        r.readAsText(f);
     }
 
     const limpiarTildes = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     function exportXLS() {
         let dr = user.rol==='pm' ? [...dbR] : dbR.filter(r=>r.ing===user.user);
-        let h="<table border='1'><tr><th>Ingeniero</th><th>Proyecto</th><th>Fecha</th><th>Horas</th><th>Actividad</th></tr>";
-        dr.forEach(r=> h+=`<tr><td>${limpiarTildes(r.ing)}</td><td>${limpiarTildes(r.proy)}</td><td>${r.fecha}</td><td>${r.horas}</td><td>${limpiarTildes(r.act)}</td></tr>`);
+        let h="<table border='1'><tr><th>Ingeniero</th><th>Proyecto</th><th>Fecha</th><th>Horas</th><th>Actividad</th><th>Descripción</th></tr>";
+        dr.forEach(r=> h+=`<tr><td>${limpiarTildes(r.ing)}</td><td>${limpiarTildes(r.proy)}</td><td>${r.fecha}</td><td>${r.horas}</td><td>${limpiarTildes(r.act)}</td><td>${limpiarTildes(r.desc||"")}</td></tr>`);
         const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([h],{type:"application/vnd.ms-excel"})); a.download=`Reporte_${user.user}.xls`; a.click();
     }
 
@@ -457,10 +610,85 @@
         }
     }
 
+    // --- FAVORITOS ---
+    function getFavKey() { return `favs_${user?.user || 'anon'}`; }
+    function getFavs() { return JSON.parse(localStorage.getItem(getFavKey())) || []; }
+    function saveFavs(f) { localStorage.setItem(getFavKey(), JSON.stringify(f)); }
+
+    function isFavorito(r) {
+        return getFavs().some(f => f.proy === r.proy && f.act === r.act && f.horas === r.horas);
+    }
+
+    window.toggleFav = function(id) {
+        const r = dbR.find(x => x.id === id);
+        if (!r) return;
+        let favs = getFavs();
+        const idx = favs.findIndex(f => f.proy === r.proy && f.act === r.act && f.horas === r.horas);
+        if (idx >= 0) {
+            favs.splice(idx, 1);
+        } else {
+            favs.push({ proy: r.proy, act: r.act, horas: r.horas, desc: r.desc, label: `${r.proy} · ${r.act} · ${r.horas}h` });
+        }
+        saveFavs(favs);
+        render();
+        renderFavPanel();
+    };
+
+    function renderFavPanel() {
+        const favs = getFavs();
+        const panel = $('favPanel');
+        const list = $('favList');
+        if (!panel || !list) return;
+        if (favs.length === 0) { panel.classList.add('hidden'); return; }
+        panel.classList.remove('hidden');
+        list.innerHTML = favs.map((f, i) => `
+            <div class="fav-item">
+                <div style="flex:1">
+                    <strong>${f.proy}</strong>
+                    <span style="display:block; margin-top:2px">${f.act} &nbsp;·&nbsp; ${f.horas}h</span>
+                    ${f.desc ? `<span style="font-size:0.75em; color:#888">${f.desc.substring(0,60)}${f.desc.length>60?'...':''}</span>` : ''}
+                </div>
+                <button class="fav-use-btn" onclick="usarFav(${i})">⚡ Usar</button>
+                <button class="fav-del-btn" onclick="borrarFav(${i})" title="Eliminar favorito">✕</button>
+            </div>
+        `).join('');
+    }
+
+    window.usarFav = function(i) {
+        const f = getFavs()[i];
+        if (!f) return;
+        const p = f.proy.split(" | ");
+        $('codProy').value = p[0] || "";
+        actualizarSubmenu();
+        setTimeout(() => { $('codPC').value = p[1] || ""; }, 50);
+        $('horas').value = f.horas;
+        $('act').value = f.act;
+        $('desc').value = f.desc || "";
+        // Fecha = hoy por defecto para que solo cambien ese campo
+        $('fecha').value = new Date().toISOString().split('T')[0];
+        $('fecha').focus();
+        window.scrollTo({ top: $('codProy').getBoundingClientRect().top + window.scrollY - 100, behavior: 'smooth' });
+    };
+
+    window.borrarFav = function(i) {
+        const favs = getFavs();
+        favs.splice(i, 1);
+        saveFavs(favs);
+        render();
+        renderFavPanel();
+    };
+
     init();
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 
