@@ -54,6 +54,11 @@
 
     /* --- CAPA ESTÉTICA CANVA ADICIONAL --- */
     .canvas-wrapper { position: relative; width: 100%; }
+    .canvas-wrapper canvas {
+        width: 100% !important;
+        height: auto !important;
+        display: block;
+    }
     .canva-overlay {
         position: absolute; top: 10px; right: 10px;
         display: flex; flex-direction: column; gap: 5px;
@@ -123,12 +128,156 @@
     .toast.warning { background: rgba(255,165,2,0.18);  border: 1px solid rgba(255,165,2,0.45);  color: #ffa502; }
     @keyframes toastIn  { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
     @keyframes toastOut { from { opacity:1; transform: translateY(0); }    to { opacity:0; transform: translateY(16px); } }
+
+    /* --- TABS DE GRÁFICOS --- */
+    .chart-tabs { display:flex; gap:6px; flex-wrap:wrap; padding-bottom:4px; }
+    .tab-btn {
+        padding: 7px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.04); color: #aaa;
+        font-size: 0.8em; font-weight: 600; cursor: pointer;
+        transition: 0.2s; width: auto;
+    }
+    .tab-btn:hover { background: rgba(79,172,254,0.12); color: var(--primary); transform: none; box-shadow: none; }
+    .tab-btn.active { background: linear-gradient(90deg, rgba(0,242,254,0.18), rgba(79,172,254,0.18)); color: var(--secondary); border-color: rgba(79,172,254,0.4); }
+    .tab-panel { animation: fadeTab 0.25s ease; }
+    @keyframes fadeTab { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* --- TABLA PAGINADA --- */
+    #tablaD table { border-radius: 0; margin-top: 0; }
+    #tablaD th { position: sticky; top: 0; z-index: 2; background: rgba(20,20,40,0.98); }
+    #btnPrev, #btnNext { background: rgba(255,255,255,0.07); color: #ccc; border: 1px solid rgba(255,255,255,0.1); }
+    #btnPrev:hover, #btnNext:hover { background: rgba(79,172,254,0.15); color: var(--primary); transform: none; box-shadow: none; }
+    #btnPrev:disabled, #btnNext:disabled { opacity: 0.25; cursor: default; transform: none; box-shadow: none; }
+
+    /* ── AURORA LOGIN ── */
+    #authModule { position:relative; overflow:hidden; }
+    .aurora { position:absolute; inset:0; pointer-events:none; z-index:0; }
+    .aurora span {
+        position:absolute; border-radius:50%; filter:blur(60px); opacity:0.18; animation:aMove 8s ease-in-out infinite;
+    }
+    .aurora span:nth-child(1){width:260px;height:260px;background:#4facfe;top:-80px;left:-60px;animation-delay:0s;}
+    .aurora span:nth-child(2){width:200px;height:200px;background:#00f2fe;bottom:-60px;right:-40px;animation-delay:-3s;}
+    .aurora span:nth-child(3){width:140px;height:140px;background:#7f5af0;top:40%;left:30%;animation-delay:-5s;}
+    @keyframes aMove {
+        0%,100%{transform:translate(0,0) scale(1);}
+        33%{transform:translate(20px,-20px) scale(1.08);}
+        66%{transform:translate(-15px,15px) scale(0.95);}
+    }
+    #authModule > *:not(.aurora) { position:relative; z-index:1; }
+    #authUser:focus, #authPass:focus, #authCode:focus {
+        border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,172,254,0.2); outline:none;
+    }
+
+    /* ── HEADER MEJORADO ── */
+    #headerGreeting {
+        font-size:0.85em; color:rgba(255,255,255,0.55); margin-top:2px; font-weight:400;
+    }
+    #syncDot {
+        width:9px; height:9px; border-radius:50%; background:#2ecc71;
+        box-shadow:0 0 6px #2ecc71; transition:background 0.4s, box-shadow 0.4s;
+        flex-shrink:0;
+    }
+    #syncDot.offline { background:#ffa502; box-shadow:0 0 6px #ffa502; }
+    @keyframes gradShift {
+        0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}
+    }
+    #appTitle {
+        background: linear-gradient(90deg,#00f2fe,#4facfe,#7f5af0,#00f2fe);
+        background-size:300% 300%; animation:gradShift 6s ease infinite;
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+
+    /* ── KPI ANIMACIÓN ── */
+    .kpi-card { transition: transform 0.2s; cursor:default; }
+    .kpi-card:hover { transform:translateY(-3px); border-color:rgba(79,172,254,0.25); }
+
+    /* ── CONTADOR DIARIO ── */
+    #dailyBar {
+        background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
+        border-radius:14px; padding:12px 18px; margin-bottom:14px;
+        display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    }
+    #dailyLabel { font-size:0.82em; color:#aaa; white-space:nowrap; }
+    #dailyTrack {
+        flex:1; min-width:120px; height:8px; background:rgba(255,255,255,0.08);
+        border-radius:10px; overflow:hidden;
+    }
+    #dailyFill { height:100%; border-radius:10px; transition:width 0.6s ease, background 0.4s; background:var(--danger); }
+    #dailyFill.ok { background: linear-gradient(90deg,#00f2fe,#2ecc71); }
+    #dailyNum { font-size:0.88em; font-weight:700; color:var(--secondary); white-space:nowrap; }
+
+    /* ── ÚLTIMO GUARDADO ── */
+    #lastSaved {
+        font-size:0.8em; color:#2ecc71; margin-top:10px; min-height:20px;
+        transition:opacity 0.4s; padding-left:2px;
+    }
+
+    /* ── ALERTA PM ── */
+    #pmAlert {
+        background:rgba(255,75,43,0.1); border:1px solid rgba(255,75,43,0.3);
+        border-radius:14px; padding:12px 18px; margin-bottom:16px;
+        font-size:0.84em; color:#ffaa99; line-height:1.5;
+    }
+
+    /* ── QUICK ENTRY FLOTANTE ── */
+    #qeBtn {
+        position:fixed; bottom:32px; left:32px; z-index:1000;
+        width:54px; height:54px; border-radius:50%;
+        background:linear-gradient(135deg,#00f2fe,#4facfe);
+        box-shadow:0 4px 20px rgba(79,172,254,0.5);
+        font-size:1.5em; display:flex; align-items:center; justify-content:center;
+        cursor:pointer; border:none; transition:0.25s; color:#000; padding:0;
+    }
+    #qeBtn:hover { transform:scale(1.12) translateY(-2px); box-shadow:0 8px 28px rgba(79,172,254,0.65); }
+    #qePanel {
+        position:fixed; bottom:100px; left:28px; z-index:999;
+        width:340px; background:rgba(18,18,36,0.97); backdrop-filter:blur(20px);
+        border:1px solid rgba(79,172,254,0.35); border-radius:20px;
+        padding:20px; box-shadow:0 16px 48px rgba(0,0,0,0.6);
+        transform:translateY(20px) scale(0.96); opacity:0;
+        transition:0.25s cubic-bezier(.34,1.56,.64,1); pointer-events:none;
+    }
+    #qePanel.open { transform:translateY(0) scale(1); opacity:1; pointer-events:auto; }
+    #qePanel h4 {
+        background:linear-gradient(90deg,#00f2fe,#4facfe);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        font-size:0.95em; margin-bottom:12px;
+    }
+    .qe-chips { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:10px; }
+    .qe-chip {
+        padding:5px 12px; border-radius:20px; font-size:0.75em; font-weight:600; cursor:pointer;
+        border:1px solid rgba(79,172,254,0.3); background:rgba(79,172,254,0.08); color:#4facfe;
+        transition:0.18s; white-space:nowrap;
+    }
+    .qe-chip:hover, .qe-chip.active { background:rgba(79,172,254,0.22); border-color:var(--primary); }
+    .qe-chip.fav-chip { border-color:rgba(255,215,0,0.4); background:rgba(255,215,0,0.07); color:#ffd700; }
+    .qe-chip.fav-chip:hover, .qe-chip.fav-chip.active { background:rgba(255,215,0,0.18); }
+    .qe-date-chip {
+        padding:5px 12px; border-radius:20px; font-size:0.75em; font-weight:600; cursor:pointer;
+        border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:#ccc;
+        transition:0.18s;
+    }
+    .qe-date-chip.active { background:rgba(0,242,254,0.18); border-color:var(--secondary); color:var(--secondary); }
+    #qeGuardar {
+        width:100%; margin-top:12px; padding:11px;
+        background:linear-gradient(90deg,#00f2fe,#4facfe); color:#000;
+        font-weight:700; border-radius:14px; font-size:0.9em;
+    }
+    #qeGuardar:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(79,172,254,0.4); }
+    .qe-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+    .qe-row select, .qe-row input { margin:0; font-size:0.82em; padding:9px 10px; border-radius:10px; }
+
 </style>
 </head>
 <body>
 
 <div id="authModule" class="glass" style="max-width: 450px; margin: 40px auto;">
-    <h2 style="text-align:center">Panel de Ingeniería</h2>
+    <div class="aurora"><span></span><span></span><span></span></div>
+    <div style="text-align:center; margin-bottom:18px;">
+        <img src="13-revergy_reducida.png" alt="Revergy" style="height:72px; filter:drop-shadow(0 0 18px #4facfe); margin-bottom:8px;">
+        <h2 style="margin:0; font-size:1.35em;">Panel de Ingeniería</h2>
+        <p style="color:rgba(255,255,255,0.4); font-size:0.78em; margin-top:4px;">Revergy Pro · Control de Horas</p>
+    </div>
     <div class="instruction-box">
         <b>💡 Manual Revergy+:</b><br>
         1. <b>Registro:</b> Crea tu cuenta personal. <br>
@@ -155,11 +304,25 @@
 <div id="app" class="hidden">
     <header>
         <img src="13-revergy_reducida.png" alt="Revergy">
-        <h1>Control de Ingeniería</h1>
-        <div style="margin-left: auto;">
+        <div>
+            <h1 id="appTitle" style="margin:0">Control de Ingeniería</h1>
+            <div id="headerGreeting"></div>
+        </div>
+        <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
+            <div id="syncDot" title="Sincronizado con Firebase"></div>
             <button onclick="logout()" style="background:var(--danger); color:#fff; width:auto;">Cerrar Sesión</button>
         </div>
     </header>
+
+    <!-- Alerta PM -->
+    <div id="pmAlert" class="hidden"></div>
+
+    <!-- Barra progreso diario -->
+    <div id="dailyBar">
+        <span id="dailyLabel">Hoy</span>
+        <div id="dailyTrack"><div id="dailyFill" style="width:0%"></div></div>
+        <span id="dailyNum">0 / 6h</span>
+    </div>
 
     <div class="kpi-container">
         <div class="kpi-card"><label>Total Horas</label><span id="kpiTotal">0</span></div>
@@ -204,6 +367,7 @@
             </select>
             <textarea id="desc" placeholder="Descripción detallada..." style="grid-column: 1 / -1; height:60px"></textarea>
             <button onclick="save()" style="grid-column: 1 / -1">💾 Guardar Actividad</button>
+            <div id="lastSaved" style="grid-column: 1 / -1"></div>
         </div>
         <!-- PANEL DE FAVORITOS -->
         <div id="favPanel" class="hidden" style="margin-top:14px;">
@@ -225,34 +389,55 @@
         </div>
     </div>
 
-    <div class="glass"><div id="tablaD"></div></div>
+    <div class="glass" style="padding:0; overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 25px 12px; border-bottom:1px solid rgba(255,255,255,0.06);">
+            <h3 style="margin:0">Registros</h3>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span id="paginaInfo" style="font-size:0.8em; color:#888;"></span>
+                <button onclick="cambiarPag(-1)" id="btnPrev" style="padding:6px 14px; width:auto; font-size:0.8em;">‹ Ant</button>
+                <button onclick="cambiarPag(1)"  id="btnNext" style="padding:6px 14px; width:auto; font-size:0.8em;">Sig ›</button>
+            </div>
+        </div>
+        <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+            <div id="tablaD"></div>
+        </div>
+    </div>
 
-    <div class="dashboard-container">
-        <div class="chart-box" id="chartIngBox">
-            <h3>Horas/Ingeniero</h3>
-            <div class="canvas-wrapper">
-                <canvas id="cIng" width="400" height="220"></canvas>
+    <div class="glass" style="padding:0; overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 25px 0; flex-wrap:wrap; gap:10px;">
+            <h3 style="margin:0">Análisis y Gráficos</h3>
+            <div class="chart-tabs">
+                <button class="tab-btn" id="tab-ing" onclick="switchTab('ing')">👤 Ingenieros</button>
+                <button class="tab-btn" id="tab-proy" onclick="switchTab('proy')">📁 Proyectos</button>
+                <button class="tab-btn" id="tab-act"  onclick="switchTab('act')">⚙ Actividades</button>
+                <button class="tab-btn" id="tab-line" onclick="switchTab('line')">📈 Tendencia</button>
+            </div>
+        </div>
+        <!-- Panel ING (solo PM) -->
+        <div class="tab-panel" id="panel-ing">
+            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
+                <canvas id="cIng" width="1400" height="480"></canvas>
                 <div id="ovIng" class="canva-overlay"></div>
             </div>
         </div>
-        <div class="chart-box">
-            <h3>Horas/Proyecto</h3>
-            <div class="canvas-wrapper">
-                <canvas id="cProy" width="400" height="220"></canvas>
+        <!-- Panel PROY -->
+        <div class="tab-panel hidden" id="panel-proy">
+            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
+                <canvas id="cProy" width="1400" height="480"></canvas>
                 <div id="ovProy" class="canva-overlay"></div>
             </div>
         </div>
-        <div class="chart-box">
-            <h3>Distribución Actividades</h3>
-            <div class="canvas-wrapper">
-                <canvas id="cAct" width="400" height="220"></canvas>
+        <!-- Panel ACT -->
+        <div class="tab-panel hidden" id="panel-act">
+            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
+                <canvas id="cAct" width="1400" height="480"></canvas>
                 <div id="ovAct" class="canva-overlay"></div>
             </div>
         </div>
-        <div class="chart-box">
-            <h3>Tendencia y Curva S</h3>
-            <div class="canvas-wrapper">
-                <canvas id="cLine" width="400" height="220"></canvas>
+        <!-- Panel LINE -->
+        <div class="tab-panel hidden" id="panel-line">
+            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
+                <canvas id="cLine" width="1400" height="480"></canvas>
                 <div id="ovS" class="canva-overlay" style="top:auto; bottom:40px;"></div>
             </div>
         </div>
@@ -273,6 +458,76 @@
 </div>
 
 <div id="toastContainer"></div>
+
+<!-- QUICK ENTRY FLOTANTE -->
+<button id="qeBtn" title="Registro rápido (10 seg)" onclick="toggleQE()">⚡</button>
+<div id="qePanel">
+    <h4>⚡ Registro Rápido</h4>
+
+    <!-- Chips de favoritos -->
+    <div id="qeFavChips" style="margin-bottom:8px;"></div>
+
+    <!-- Proyecto + P+C -->
+    <div class="qe-row">
+        <select id="qeCodProy" onchange="qeActualizarPC()" style="grid-column:1/-1; width:100%;">
+            <option value="">Proyecto...</option>
+            <option value="CSE-2256613">CSE-2256613</option>
+            <option value="CSV-2263319">CSV-2263319</option>
+            <option value="005-PTR">005-PTR</option>
+            <option value="G639">G639</option>
+            <option value="VLTL-01">VLTL-01</option>
+            <option value="DD-UNRG">DD-UNRG</option>
+            <option value="DD-COX">DD-COX</option>
+            <option value="DD-FMO">DD-FMO</option>
+            <option value="DD-ATL">DD-ATL</option>
+            <option value="DD-KAI">DD-KAI</option>
+            <option value="DD-CFM">DD-CFM</option>
+            <option value="JNK-MLG-01">JNK-MLG-01</option>
+            <option value="EDF-BSL6">EDF-BSL6</option>
+            <option value="SDI2">SDI2 - Sol de Inirida 2</option>
+            <option value="BSL6">BSL6 - Bosques Solares de Los Llanos 6</option>
+            <option value="ING">ING</option>
+        </select>
+    </div>
+    <select id="qeCodPC" style="width:100%; margin-top:6px; font-size:0.82em; padding:9px 10px; border-radius:10px;">
+        <option value="">Código P+C...</option>
+    </select>
+
+    <!-- Actividad -->
+    <select id="qeAct" style="width:100%; margin-top:6px; font-size:0.82em; padding:9px 10px; border-radius:10px;">
+        <option value="">Actividad...</option>
+        <option>Gestion de Proyecto</option>
+        <option>Revision de Ingenieria</option>
+        <option>Mesas de Trabajo</option>
+        <option>Revision Informacion Previa</option>
+        <option>Diseño de Ingenieria</option>
+        <option>Atencion de comentarios</option>
+    </select>
+
+    <!-- Horas rápidas -->
+    <div style="margin-top:10px; margin-bottom:4px; font-size:0.75em; color:#888;">Horas</div>
+    <div class="qe-chips" id="qeHorasChips">
+        <span class="qe-chip" onclick="qeSetHoras(1)">1h</span>
+        <span class="qe-chip" onclick="qeSetHoras(2)">2h</span>
+        <span class="qe-chip" onclick="qeSetHoras(3)">3h</span>
+        <span class="qe-chip" onclick="qeSetHoras(4)">4h</span>
+        <span class="qe-chip" onclick="qeSetHoras(6)">6h</span>
+        <span class="qe-chip" onclick="qeSetHoras(8)">8h</span>
+        <input id="qeHoras" type="number" step="0.5" min="0.5" max="12" placeholder="Otra"
+               style="width:70px; padding:5px 8px; font-size:0.8em; margin:0; border-radius:10px;">
+    </div>
+
+    <!-- Fecha rápida -->
+    <div style="margin-top:8px; margin-bottom:4px; font-size:0.75em; color:#888;">Fecha</div>
+    <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+        <span class="qe-date-chip active" id="qeChipHoy"   onclick="qeSetFecha(0)">Hoy</span>
+        <span class="qe-date-chip"        id="qeChipAyer"  onclick="qeSetFecha(1)">Ayer</span>
+        <span class="qe-date-chip"        id="qeChipD2"    onclick="qeSetFecha(2)">Hace 2 días</span>
+        <input id="qeFecha" type="date" style="flex:1; min-width:120px; padding:5px 8px; font-size:0.8em; margin:0; border-radius:10px;">
+    </div>
+
+    <button id="qeGuardar" onclick="qeSave()">⚡ Guardar ahora</button>
+</div>
 
 <script>
     const $=id=>document.getElementById(id);
@@ -314,13 +569,18 @@
             const rUsr = await fetch(`${DB_URL}/usuarios.json`);
             const dUsr = await rUsr.json();
             if(dUsr) { dbU = Object.values(dUsr); localStorage.setItem("db_usuarios", JSON.stringify(dbU)); }
-        } catch (e) { console.error("Cloud Error"); }
+            setSyncDot(true);
+        } catch (e) { console.error("Cloud Error"); setSyncDot(false); }
     }
 
     let dbU = JSON.parse(localStorage.getItem("db_usuarios")) || [];
     let dbR = JSON.parse(localStorage.getItem("db_registros")) || [];
     let user = JSON.parse(localStorage.getItem("sesion_activa"));
     let editId = null;
+    let paginaActual = 0;
+    const POR_PAGINA = 10;
+    let datosRender = [];
+    let tabActiva = 'ing';
 
     function logout() { localStorage.removeItem("sesion_activa"); location.reload(); }
     function switchAuth(m) { 
@@ -348,12 +608,33 @@
 
     async function init() {
         if(user){
+            setSyncDot(false);
             await pullCloud();
+            setSyncDot(true);
             $('authModule').classList.add('hidden'); $('app').classList.remove('hidden');
-            if(user.rol==='pm'){ $('pmTools').classList.remove('hidden'); fillIngs(); }
-            else { $('chartIngBox').classList.add('hidden'); $('ingSel').innerHTML=`<option>${user.user}</option>`; $('ingSel').disabled=true; }
+
+            // Saludo personalizado
+            const gr = $('headerGreeting');
+            if(gr) gr.textContent = saludar() + ', ' + user.user + ' · ' + (user.rol === 'pm' ? 'Manager' : 'Ingeniero');
+
+            if(user.rol==='pm'){
+                $('pmTools').classList.remove('hidden'); fillIngs();
+                switchTab('ing');
+                updatePMAlert();
+            } else {
+                $('ingSel').innerHTML=`<option>${user.user}</option>`; $('ingSel').disabled=true;
+                const tabIng = $('tab-ing'); if(tabIng) tabIng.style.display='none';
+                switchTab('proy');
+            }
+
+            // Inicializar fecha del formulario con hoy
+            const fechaInput = $('fecha');
+            if(fechaInput && !fechaInput.value) fechaInput.value = fechaOffset(0);
+
             render();
             renderFavPanel();
+            updateDailyBar();
+            window.addEventListener('resize', () => { if(user) render(); });
         }
     }
 
@@ -387,7 +668,11 @@
         editId ? dbR=dbR.map(x=>x.id===editId?r:x) : dbR.push(r);
         localStorage.setItem("db_registros", JSON.stringify(dbR));
         syncCloud('actividades', r);
-        const msg = editId ? "Registro actualizado correctamente" : "Actividad guardada correctamente"; editId=null; clean(); render(); toast(msg, "success");
+        const isEdit = !!editId;
+        const savedR = {...r};
+        editId=null; clean(); render(); updateDailyBar();
+        showLastSaved(savedR);
+        toast(isEdit ? "Registro actualizado correctamente" : "Actividad guardada correctamente", "success");
     }
 
     function clean() { $('codProy').value=""; $('fecha').value=$('horas').value=$('act').value=$('desc').value=""; }
@@ -412,13 +697,24 @@
         const metas = dias.filter(h=>h>=META).length;
         const proys = d.reduce((acc, r) => { acc[r.proy] = (acc[r.proy]||0)+1; return acc; }, {});
         const top = Object.keys(proys).length ? Object.keys(proys).reduce((a,b)=>proys[a]>proys[b]?a:b) : "-";
-        $('kpiTotal').innerText = total.toFixed(1); $('kpiMeta').innerText = metas;
-        $('kpiProy').innerText = top.substring(0,10); $('kpiEfi').innerText = dias.length ? ((metas/dias.length)*100).toFixed(0)+"%" : "0%";
+        animCount($('kpiTotal'), total, 1);
+        animCount($('kpiMeta'), metas, 0);
+        $('kpiProy').innerText = top.substring(0,10);
+        const efi = dias.length ? (metas/dias.length)*100 : 0;
+        animCount($('kpiEfi'), efi, 0, '%');
     }
 
     function renderT(d) {
+        datosRender = d;
+        // Si hay un filtro nuevo, volver a pág 0
+        const totalPags = Math.ceil(d.length / POR_PAGINA) || 1;
+        if(paginaActual >= totalPags) paginaActual = 0;
+
+        const inicio = paginaActual * POR_PAGINA;
+        const slice = d.slice(inicio, inicio + POR_PAGINA);
+
         let h="<table><tr><th>Ingeniero</th><th>Proyecto</th><th>Fecha</th><th>Horas</th><th>Actividad</th><th>Acciones</th></tr>";
-        d.forEach(r=>{
+        slice.forEach(r=>{
             const c=r.horas>=META;
             const isFav = isFavorito(r);
             h+=`<tr><td>${r.ing}</td><td>${r.proy}</td><td>${r.fecha}</td><td class="${c?'meta-cumplida':'meta-baja'}">${r.horas}h</td><td>${r.act}</td>
@@ -428,8 +724,23 @@
               <button onclick="delR(${r.id})" style="background:var(--danger);padding:5px; width:auto">🗑️</button>
             </td></tr>`;
         });
+        if(!slice.length) h += '<tr><td colspan="6" style="text-align:center;color:#666;padding:30px">Sin registros</td></tr>';
         $('tablaD').innerHTML=h+"</table>";
+
+        // Controles de paginación
+        const info = $('paginaInfo');
+        const btnP = $('btnPrev');
+        const btnN = $('btnNext');
+        if(info) info.textContent = d.length ? `${inicio+1}–${Math.min(inicio+POR_PAGINA,d.length)} de ${d.length}` : '';
+        if(btnP) btnP.disabled = paginaActual === 0;
+        if(btnN) btnN.disabled = paginaActual >= totalPags - 1;
     }
+
+    window.cambiarPag = function(dir) {
+        const totalPags = Math.ceil(datosRender.length / POR_PAGINA) || 1;
+        paginaActual = Math.max(0, Math.min(paginaActual + dir, totalPags - 1));
+        renderT(datosRender);
+    };
 
     window.editR=id=>{ 
         const r=dbR.find(x=>x.id===id); $('ingSel').value=r.ing; 
@@ -446,35 +757,118 @@
 
     function draw(id, data, color, esL = false) {
         const c=$(id); if(!c) return;
-        const ctx=c.getContext("2d"); ctx.clearRect(0,0,c.width,c.height);
+        const ctx=c.getContext("2d");
+        const W=c.width, H=c.height;
+        ctx.clearRect(0,0,W,H);
         const ks=Object.keys(data), vs=Object.values(data); if(!ks.length) return;
         const max=Math.max(...vs, esL?META:1);
+        const PL=44, PR=16, PT=24, PB=38;
+        const gW=W-PL-PR, gH=H-PT-PB;
+
+        // Cuadrícula y eje Y
+        ctx.font="10px Segoe UI,Arial"; ctx.textAlign="right";
+        [0,0.25,0.5,0.75,1].forEach(t=>{
+            const yg=PT+gH*(1-t), val=(max*t).toFixed(1);
+            ctx.strokeStyle="rgba(255,255,255,0.06)"; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+            ctx.beginPath(); ctx.moveTo(PL,yg); ctx.lineTo(PL+gW,yg); ctx.stroke();
+            ctx.setLineDash([]); ctx.fillStyle="rgba(255,255,255,0.3)";
+            ctx.fillText(val+"h", PL-4, yg+3.5);
+        });
+        ctx.setLineDash([]);
+
         if(esL){
-            const step = (c.width-60)/(ks.length-1||1); const ym=c.height-(META/max*(c.height-60))-30;
-            ctx.setLineDash([]); ctx.strokeStyle="rgba(255,75,43,0.4)"; ctx.beginPath(); ctx.moveTo(30,ym); ctx.lineTo(c.width-30,ym); ctx.stroke();
-            ctx.strokeStyle=color; ctx.beginPath(); ctx.lineWidth=3;
+            const step=(ks.length>1?gW/(ks.length-1):gW);
+
+            // Línea meta punteada
+            const ym=PT+gH-(META/max*gH);
+            ctx.setLineDash([6,4]); ctx.strokeStyle="rgba(255,80,60,0.5)"; ctx.lineWidth=1.5;
+            ctx.beginPath(); ctx.moveTo(PL,ym); ctx.lineTo(PL+gW,ym); ctx.stroke();
+            ctx.setLineDash([]); ctx.fillStyle="rgba(255,100,80,0.7)"; ctx.font="9px Segoe UI,Arial"; ctx.textAlign="left";
+            ctx.fillText("Meta "+META+"h", PL+4, ym-4);
+
+            // Relleno bajo curva
+            const gr=ctx.createLinearGradient(0,PT,0,PT+gH);
+            gr.addColorStop(0,"rgba(79,172,254,0.22)"); gr.addColorStop(1,"rgba(79,172,254,0.02)");
+            ctx.beginPath();
+            ks.forEach((k,i)=>{ const x=PL+i*step,y=PT+gH-(vs[i]/max*gH); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+            ctx.lineTo(PL+(ks.length-1)*step,PT+gH); ctx.lineTo(PL,PT+gH); ctx.closePath();
+            ctx.fillStyle=gr; ctx.fill();
+
+            // Línea principal suave
+            ctx.beginPath(); ctx.lineWidth=2.5; ctx.strokeStyle=color; ctx.lineJoin="round";
+            ks.forEach((k,i)=>{ const x=PL+i*step,y=PT+gH-(vs[i]/max*gH); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+            ctx.stroke();
+
+            // Puntos + etiquetas
+            const cada=Math.max(1,Math.ceil(ks.length/7));
             ks.forEach((k,i)=>{
-                const x=30+i*step, y=c.height-(vs[i]/max*(c.height-60))-30;
-                i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-                ctx.fillStyle=vs[i]>=META?"#2ecc71":"#ff4b2b"; ctx.fillRect(x-3,y-3,6,6);
-            }); ctx.stroke();
+                const x=PL+i*step, y=PT+gH-(vs[i]/max*gH), ok=vs[i]>=META;
+                ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+                ctx.fillStyle=ok?"rgba(46,204,113,0.25)":"rgba(255,75,43,0.25)"; ctx.fill();
+                ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
+                ctx.fillStyle=ok?"#2ecc71":"#ff4b2b"; ctx.fill();
+                if(ks.length<=25){ ctx.fillStyle="rgba(255,255,255,0.7)"; ctx.font="9px Segoe UI,Arial"; ctx.textAlign="center"; ctx.fillText(vs[i].toFixed(1)+"h",x,y-9); }
+                if(i%cada===0||i===ks.length-1){ ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="9px Segoe UI,Arial"; ctx.textAlign="center"; ctx.fillText(k.length>=10?k.slice(5):k,x,PT+gH+PB-6); }
+            });
+
         } else {
-            const w=(c.width/ks.length)*0.5;
+            const slotW=gW/ks.length, barW=Math.min(slotW*0.6,52), r=4;
             ks.forEach((k,i)=>{
-                const h=(vs[i]/max)*(c.height-60), x=i*(c.width/ks.length)+(c.width/ks.length-w)/2;
-                ctx.fillStyle=color; ctx.fillRect(x,c.height-h-30,w,h);
-                ctx.fillStyle="#fff"; ctx.font="9px Arial"; ctx.fillText(vs[i]+"h", x, c.height-h-35);
+                const bh=(vs[i]/max*gH), x=PL+i*slotW+(slotW-barW)/2, y=PT+gH-bh;
+                // Barra redondeada arriba
+                ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+barW-r,y);
+                ctx.arcTo(x+barW,y,x+barW,y+r,r); ctx.lineTo(x+barW,PT+gH);
+                ctx.lineTo(x,PT+gH); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+                ctx.closePath(); ctx.fillStyle=color; ctx.fill();
+                // Brillo
+                const sh=ctx.createLinearGradient(x,y,x+barW,y);
+                sh.addColorStop(0,"rgba(255,255,255,0.14)"); sh.addColorStop(1,"rgba(255,255,255,0)");
+                ctx.fillStyle=sh; ctx.fill();
+                // Valor
+                ctx.fillStyle="rgba(255,255,255,0.85)"; ctx.font="bold 10px Segoe UI,Arial"; ctx.textAlign="center";
+                ctx.fillText(vs[i].toFixed(1)+"h", x+barW/2, y-6);
+                // Label eje X truncado
+                const lbl=k.length>12?k.substring(0,11)+"…":k;
+                ctx.fillStyle="rgba(255,255,255,0.38)"; ctx.font="9px Segoe UI,Arial";
+                ctx.fillText(lbl, x+barW/2, PT+gH+PB-6);
             });
         }
+        // Eje Y línea
+        ctx.strokeStyle="rgba(255,255,255,0.1)"; ctx.lineWidth=1; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(PL,PT); ctx.lineTo(PL,PT+gH); ctx.stroke();
     }
 
     function renderC(d) {
         const s={ing:{}, proy:{}, act:{}, temp:{}};
         d.forEach(r=>{ s.ing[r.ing]=(s.ing[r.ing]||0)+r.horas; s.proy[r.proy]=(s.proy[r.proy]||0)+r.horas; s.act[r.act]=(s.act[r.act]||0)+r.horas; s.temp[r.fecha]=(s.temp[r.fecha]||0)+r.horas; });
         if(user.rol==='pm') draw("cIng", s.ing, "#4facfe");
-        draw("cProy", s.proy, "#00f2fe"); draw("cAct", s.act, "#ffa502"); draw("cLine", s.temp, "#2ecc71", true);
-        applyCanvaFX(d, s);
+        draw("cProy", s.proy, "#00f2fe"); draw("cAct", s.act, "#ffa502");
+        applyCanvaFX(d, s); // applyCanvaFX dibuja la curva S acumulada en cLine
     }
+
+    // --- TABS DE GRÁFICOS ---
+    window.switchTab = function(tab) {
+        if(tab === 'ing' && user.rol !== 'pm') tab = 'proy';
+        tabActiva = tab;
+        ['ing','proy','act','line'].forEach(t => {
+            const panel = $('panel-'+t);
+            const btn   = $('tab-'+t);
+            if(panel) panel.classList.toggle('hidden', t !== tab);
+            if(btn)   btn.classList.toggle('active', t === tab);
+        });
+        // Redibujar canvas activo con tamaño real del contenedor
+        const ids = { ing:'cIng', proy:'cProy', act:'cAct', line:'cLine' };
+        const cv = $(ids[tab]);
+        if(cv) {
+            const wrapper = cv.parentElement;
+            const realW = wrapper.clientWidth - 40; // descontar padding
+            if(realW > 100) {
+                cv.width  = realW * (window.devicePixelRatio || 1);
+                cv.height = Math.round(realW * 0.30 * (window.devicePixelRatio || 1));
+            }
+            setTimeout(() => render(), 10);
+        }
+    };
 
     // --- EXPORTACIÓN Y BACKUP ---
     function exportarBackup() {
@@ -600,7 +994,7 @@
         const ks = Object.keys(s.temp).sort();
         let ac = 0; const ds = {};
         ks.forEach(k => { ac += s.temp[k]; ds[k] = ac; });
-        draw("cLine", ds, "rgba(79, 172, 254, 0.6)", true); // Dibuja la curva azul
+        draw("cLine", ds, "#4facfe", true); // Curva S acumulada con nuevo draw
         
         if($('ovS')) {
             $('ovS').innerHTML = `<div class="canva-badge" style="border-left:3px solid var(--secondary)">
@@ -678,26 +1072,197 @@
         renderFavPanel();
     };
 
+    // ── UTILIDADES DE FECHA ─────────────────────────
+    function fechaOffset(dias) {
+        const d = new Date(); d.setDate(d.getDate() - dias);
+        return d.toISOString().split('T')[0];
+    }
+    function saludar() {
+        const h = new Date().getHours();
+        if(h < 12) return 'Buenos días';
+        if(h < 18) return 'Buenas tardes';
+        return 'Buenas noches';
+    }
+
+    // ── SYNC DOT ────────────────────────────────────
+    function setSyncDot(online) {
+        const d = $('syncDot'); if(!d) return;
+        d.classList.toggle('offline', !online);
+        d.title = online ? 'Sincronizado con Firebase' : 'Sin conexión — modo local';
+    }
+
+    // ── ANIMACIÓN DE CONTEO KPI ─────────────────────
+    function animCount(el, target, decimals=1, suffix='') {
+        const start = 0, dur = 900, step = 16;
+        let cur = start, t = 0;
+        const iv = setInterval(() => {
+            t += step; cur = Math.min(target, target * (t/dur));
+            el.textContent = cur.toFixed(decimals) + suffix;
+            if(cur >= target) { el.textContent = target.toFixed(decimals) + suffix; clearInterval(iv); }
+        }, step);
+    }
+
+    // ── BARRA DIARIA ────────────────────────────────
+    function updateDailyBar() {
+        if(!user) return;
+        const hoy = fechaOffset(0);
+        const horasHoy = dbR.filter(r => r.ing === user.user && r.fecha === hoy)
+                             .reduce((s,r) => s + r.horas, 0);
+        const pct = Math.min(100, (horasHoy / META) * 100);
+        const fill = $('dailyFill');
+        const num  = $('dailyNum');
+        const lbl  = $('dailyLabel');
+        if(fill) { fill.style.width = pct+'%'; fill.classList.toggle('ok', horasHoy >= META); }
+        if(num)  num.textContent = horasHoy.toFixed(1)+'h / '+META+'h';
+        if(lbl)  lbl.textContent = horasHoy >= META ? '✓ Meta cumplida hoy' : 'Hoy';
+    }
+
+    // ── ALERTA PM ───────────────────────────────────
+    function updatePMAlert() {
+        const alerta = $('pmAlert'); if(!alerta || user.rol !== 'pm') return;
+        const hoy = fechaOffset(0);
+        const conRegistro = new Set(dbR.filter(r => r.fecha === hoy).map(r => r.ing));
+        const sinRegistro = dbU.filter(u => u.rol === 'ingeniero' && !conRegistro.has(u.user));
+        if(sinRegistro.length === 0) { alerta.classList.add('hidden'); return; }
+        alerta.classList.remove('hidden');
+        alerta.innerHTML = '🚨 <strong>Sin registro hoy:</strong> ' +
+            sinRegistro.map(u => `<span style="color:#fff;background:rgba(255,75,43,0.2);padding:1px 8px;border-radius:8px;margin:2px;display:inline-block">${u.user}</span>`).join('');
+    }
+
+    // ── ÚLTIMO GUARDADO ─────────────────────────────
+    function showLastSaved(r) {
+        const el = $('lastSaved'); if(!el) return;
+        el.innerHTML = '✓ Guardado: <strong>' + r.proy + '</strong> · ' + r.horas + 'h · ' + r.fecha;
+        el.style.opacity = '1';
+        setTimeout(() => { el.style.opacity = '0'; }, 4000);
+    }
+
+    // ── QUICK ENTRY ─────────────────────────────────
+    let qeOpen = false;
+    let qeHorasVal = null;
+    let qeFechaVal = fechaOffset(0);
+
+    function toggleQE() {
+        qeOpen = !qeOpen;
+        const p = $('qePanel'); if(!p) return;
+        p.classList.toggle('open', qeOpen);
+        if(qeOpen) {
+            qeFechaVal = fechaOffset(0);
+            $('qeFecha').value = qeFechaVal;
+            qeRenderFavChips();
+            // Si hay un solo usuario (ingeniero) preseleccionar
+            if(user && user.rol === 'ingeniero') {
+                // nada extra, el save() del QE ya usa user.user
+            }
+        }
+    }
+
+    // Cerrar QE al hacer clic fuera
+    document.addEventListener('click', e => {
+        if(qeOpen && !$('qePanel').contains(e.target) && e.target.id !== 'qeBtn') {
+            qeOpen = false; $('qePanel').classList.remove('open');
+        }
+    });
+
+    function qeActualizarPC() {
+        const principal = $('qeCodProy').value;
+        const sub = $('qeCodPC');
+        sub.innerHTML = '<option value="">Código P+C...</option>';
+        let opts = [];
+        if(principal === 'JNK-MLG-01') opts = ['JNK-MLG-01-Gestión','JNK-MLG-01-Ingeniería','JNK-MLG-01-MesaTrabajo','JNK-MLG-01-Previos'];
+        else if(principal === 'EDF-BSL6') opts = ['EDF-BSL6-Gestión','EDF-BSL6-Ingeniería','EDF-BSL6-MesaTrabajo','EDF-BSL6-Previos'];
+        else if(principal === 'SDI2') opts = ['SDI2-Gestión','SDI2-Ingeniería','SDI2-MesaTrabajo','SDI2-Previos'];
+        else if(principal === 'BSL6') opts = ['BSL6-Gestión','BSL6-Ingeniería','BSL6-MesaTrabajo','BSL6-Previos'];
+        else if(principal === 'ING') opts = ['GST-ING','OFC-ING','CLD-ING','OFT-ING','CAP-ING','LCC'];
+        else if(principal) opts = [principal+'-P+C'];
+        opts.forEach(o => { const el = document.createElement('option'); el.value=o; el.textContent=o; sub.appendChild(el); });
+        if(opts.length === 1) sub.value = opts[0];
+    }
+
+    function qeSetHoras(h) {
+        qeHorasVal = h;
+        $('qeHoras').value = h;
+        document.querySelectorAll('#qeHorasChips .qe-chip').forEach(c => {
+            c.classList.toggle('active', parseFloat(c.textContent) === h);
+        });
+    }
+
+    function qeSetFecha(diasAtras) {
+        qeFechaVal = fechaOffset(diasAtras);
+        $('qeFecha').value = qeFechaVal;
+        ['qeChipHoy','qeChipAyer','qeChipD2'].forEach((id,i) => {
+            const el = $(id); if(el) el.classList.toggle('active', i === diasAtras);
+        });
+    }
+
+    function qeRenderFavChips() {
+        const favs = getFavs();
+        const cont = $('qeFavChips'); if(!cont) return;
+        if(!favs.length) { cont.innerHTML = ''; return; }
+        cont.innerHTML = '<div style="font-size:0.72em;color:#888;margin-bottom:5px;">⭐ Favoritos rápidos</div>' +
+            '<div class="qe-chips">' +
+            favs.map((f,i) => {
+                const label = f.proy.split(' | ')[0] + ' · ' + f.horas + 'h';
+                return `<span class="qe-chip fav-chip" onclick="qeUsarFav(${i})">${label}</span>`;
+            }).join('') + '</div>';
+    }
+
+    window.qeUsarFav = function(i) {
+        const f = getFavs()[i]; if(!f) return;
+        const p = f.proy.split(' | ');
+        $('qeCodProy').value = p[0] || '';
+        qeActualizarPC();
+        setTimeout(() => { if(p[1]) $('qeCodPC').value = p[1]; }, 50);
+        if(f.act) $('qeAct').value = f.act;
+        qeSetHoras(f.horas);
+        document.querySelectorAll('#qeFavChips .qe-chip').forEach((c,ci) => c.classList.toggle('active', ci === i));
+    };
+
+    function qeSave() {
+        const proy = $('qeCodProy').value;
+        const pc   = $('qeCodPC').value;
+        const act  = $('qeAct').value;
+        const h    = parseFloat($('qeHoras').value);
+        const f    = $('qeFecha').value || qeFechaVal;
+        const ing  = user.rol === 'ingeniero' ? user.user : (user.user); // PM registra en su nombre desde QE
+
+        if(!proy || !h || !act || !f) return toast('Completa proyecto, actividad y horas', 'warning');
+
+        const r = { id: Date.now(), ing, proy: proy + (pc ? ' | ' + pc : ''), fecha: f, horas: h, act, desc: '' };
+        dbR.push(r);
+        localStorage.setItem('db_registros', JSON.stringify(dbR));
+        syncCloud('actividades', r);
+        render();
+        updateDailyBar();
+        showLastSaved(r);
+        toast('⚡ Registrado: ' + proy + ' · ' + h + 'h', 'success');
+
+        // Reset horas para la próxima entrada rápida
+        qeHorasVal = null;
+        $('qeHoras').value = '';
+        document.querySelectorAll('#qeHorasChips .qe-chip').forEach(c => c.classList.remove('active'));
+
+        // Cerrar panel tras 600ms
+        setTimeout(() => {
+            qeOpen = false; $('qePanel').classList.remove('open');
+        }, 600);
+    }
+
+    // Escuchar cambio manual en input de fecha QE
+    document.addEventListener('DOMContentLoaded', () => {
+        const qf = $('qeFecha');
+        if(qf) qf.addEventListener('change', () => {
+            qeFechaVal = qf.value;
+            ['qeChipHoy','qeChipAyer','qeChipD2'].forEach(id => {
+                const el = $(id); if(el) el.classList.remove('active');
+            });
+        });
+    });
+
     init();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
