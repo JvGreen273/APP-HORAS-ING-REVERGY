@@ -4,59 +4,100 @@
 <meta charset="UTF-8">
 <title>Revergy Pro - Panel de Ingeniería</title>
 <style>
-    /* --- TU CSS ORIGINAL (MANTENIDO 100%) --- */
+    /* --- REVERGY PRO · DESIGN SYSTEM v3 --- */
     :root {
         --primary: #4facfe; --secondary: #00f2fe; --danger: #ff4b2b; --success: #2ecc71;
-        --bg-glass: rgba(30, 30, 47, 0.85);
+        --warn: #ffa502; --purple: #7f5af0;
+        --bg-glass: rgba(12, 14, 28, 0.82);
+        --border-glass: rgba(255,255,255,0.08);
+        --glow-primary: rgba(79,172,254,0.18);
+        --glow-secondary: rgba(0,242,254,0.14);
     }
     body{
-        font-family:"Segoe UI",Arial; margin:0; padding:20px;
-        background: radial-gradient(circle at top right, #1e3c72, #2a5298, #0f0f1a);
-        color:#f5f5f5; min-height: 100vh;
+        font-family:"Segoe UI",system-ui,Arial; margin:0; padding:24px 28px;
+        background: #070a14;
+        background-image:
+            radial-gradient(ellipse 80% 60% at 20% -10%, rgba(30,60,114,0.7) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 50% at 85% 110%, rgba(42,82,152,0.45) 0%, transparent 55%),
+            radial-gradient(ellipse 40% 40% at 60% 40%, rgba(79,172,254,0.04) 0%, transparent 50%);
+        color:#e8eaf2; min-height: 100vh;
     }
+    /* Subtle grid overlay */
+    body::before {
+        content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+        background-image: linear-gradient(rgba(79,172,254,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(79,172,254,0.025) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+    #app, #authModule { position:relative; z-index:1; }
     .glass {
-        background: var(--bg-glass); backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;
-        padding: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); margin-bottom: 20px;
+        background: var(--bg-glass); backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid var(--border-glass); border-radius: 22px;
+        padding: 26px; margin-bottom: 22px;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset,
+                    0 20px 60px rgba(0,0,0,0.55),
+                    0 0 0 1px rgba(0,0,0,0.4);
     }
     .instruction-box {
         background: rgba(79, 172, 254, 0.1); border-left: 4px solid var(--primary);
         padding: 15px; margin-bottom: 20px; font-size: 0.85em; color: #ccc; text-align: left;
         line-height: 1.4; border-radius: 0 10px 10px 0;
     }
-    header{display:flex;align-items:center;gap:20px;margin-bottom:20px;}
-    header img{height:60px; filter: drop-shadow(0 0 10px var(--primary));}
+    header{display:flex;align-items:center;gap:20px;margin-bottom:22px;flex-wrap:wrap;}
+    header img{height:58px; filter: drop-shadow(0 0 16px rgba(79,172,254,0.5)) drop-shadow(0 0 40px rgba(79,172,254,0.2));}
     h1,h2,h3{
         background:linear-gradient(90deg, var(--secondary), var(--primary));
         -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     }
-    .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    .kpi-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-    .kpi-card span { display: block; font-size: 1.8em; font-weight: bold; color: var(--secondary); }
-    .kpi-card label { font-size: 0.8em; color: #aaa; text-transform: uppercase; }
+    .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .kpi-card {
+        background: linear-gradient(145deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02));
+        padding: 20px 18px; border-radius: 18px; text-align: center;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.06) inset;
+        position:relative; overflow:hidden;
+    }
+    .kpi-card::before {
+        content:''; position:absolute; top:-30px; right:-20px;
+        width:80px; height:80px; border-radius:50%;
+        background: radial-gradient(circle, rgba(79,172,254,0.12), transparent 70%);
+    }
+    .kpi-card span { display: block; font-size: 2em; font-weight: 700; color: var(--secondary); letter-spacing:-0.5px; }
+    .kpi-card label { font-size: 0.72em; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing:.08em; margin-top:4px; display:block; }
     input, select, textarea {
-        width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box;
-        border-radius: 10px; border: 1px solid #444; background: #151525; color: #fff;
+        width: 100%; padding: 11px 14px; margin: 7px 0; box-sizing: border-box;
+        border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(10,12,28,0.7); color: #e8eaf2;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
+    input:focus, select:focus, textarea:focus {
+        outline:none; border-color: rgba(79,172,254,0.5);
+        box-shadow: 0 0 0 3px rgba(79,172,254,0.12);
+    }
+    select option { background: #0e1020; color: #e8eaf2; }
     button {
-        padding: 12px 24px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold;
-        transition: 0.3s; background: linear-gradient(90deg, var(--secondary), var(--primary)); color: #000;
+        padding: 11px 24px; border-radius: 25px; border: none; cursor: pointer; font-weight: 700;
+        transition: 0.25s; background: linear-gradient(135deg, var(--secondary), var(--primary));
+        color: #000; letter-spacing:.02em; font-size:0.88em;
     }
-    button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4); }
+    button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35); filter:brightness(1.06); }
+    button:active { transform: translateY(0); }
     .hidden { display: none !important; }
-    table { border-collapse: collapse; width: 100%; margin-top: 15px; border-radius: 12px; overflow: hidden; }
-    th { background: rgba(79, 172, 254, 0.2); color: var(--secondary); padding: 15px; text-align: left; }
-    td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; border-radius: 14px; overflow: hidden; }
+    th { background: rgba(79, 172, 254, 0.1); color: rgba(0,242,254,0.9); padding: 13px 16px; text-align: left; font-size:0.8em; letter-spacing:.06em; text-transform:uppercase; border-bottom: 1px solid rgba(79,172,254,0.15); }
+    td { padding: 11px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); background: transparent; font-size:0.88em; }
+    tr:hover td { background: rgba(79,172,254,0.04); }
     .meta-cumplida { color: var(--success); font-weight: bold; }
     .meta-baja { color: var(--danger); font-weight: bold; }
     .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
     .chart-box { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; text-align: center; }
 
     /* --- CAPA ESTÉTICA CANVA ADICIONAL --- */
-    .canvas-wrapper { position: relative; width: 100%; }
+    .canvas-wrapper { position: relative; width: 100%; overflow: hidden; }
     .canvas-wrapper canvas {
         width: 100% !important;
         height: auto !important;
+        max-height: 420px;
         display: block;
     }
     .canva-overlay {
@@ -132,13 +173,17 @@
     /* --- TABS DE GRÁFICOS --- */
     .chart-tabs { display:flex; gap:6px; flex-wrap:wrap; padding-bottom:4px; }
     .tab-btn {
-        padding: 7px 16px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
-        background: rgba(255,255,255,0.04); color: #aaa;
-        font-size: 0.8em; font-weight: 600; cursor: pointer;
+        padding: 7px 18px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.09);
+        background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5);
+        font-size: 0.78em; font-weight: 600; cursor: pointer; letter-spacing:.03em;
         transition: 0.2s; width: auto;
     }
-    .tab-btn:hover { background: rgba(79,172,254,0.12); color: var(--primary); transform: none; box-shadow: none; }
-    .tab-btn.active { background: linear-gradient(90deg, rgba(0,242,254,0.18), rgba(79,172,254,0.18)); color: var(--secondary); border-color: rgba(79,172,254,0.4); }
+    .tab-btn:hover { background: rgba(79,172,254,0.1); color: var(--primary); transform: none; box-shadow: none; border-color: rgba(79,172,254,0.25); }
+    .tab-btn.active {
+        background: linear-gradient(135deg, rgba(0,242,254,0.15), rgba(79,172,254,0.2));
+        color: var(--secondary); border-color: rgba(79,172,254,0.5);
+        box-shadow: 0 0 16px rgba(79,172,254,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
     .tab-panel { animation: fadeTab 0.25s ease; }
     @keyframes fadeTab { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
@@ -193,8 +238,9 @@
 
     /* ── CONTADOR DIARIO ── */
     #dailyBar {
-        background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08);
-        border-radius:14px; padding:12px 18px; margin-bottom:14px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(79,172,254,0.03));
+        border:1px solid rgba(79,172,254,0.12);
+        border-radius:16px; padding:14px 22px; margin-bottom:16px;
         display:flex; align-items:center; gap:14px; flex-wrap:wrap;
     }
     #dailyLabel { font-size:0.82em; color:#aaa; white-space:nowrap; }
@@ -231,9 +277,9 @@
     #qeBtn:hover { transform:scale(1.12) translateY(-2px); box-shadow:0 8px 28px rgba(79,172,254,0.65); }
     #qePanel {
         position:fixed; bottom:100px; left:28px; z-index:999;
-        width:340px; background:rgba(18,18,36,0.97); backdrop-filter:blur(20px);
-        border:1px solid rgba(79,172,254,0.35); border-radius:20px;
-        padding:20px; box-shadow:0 16px 48px rgba(0,0,0,0.6);
+        width:340px; background:rgba(8,10,24,0.97); backdrop-filter:blur(30px) saturate(180%);
+        border:1px solid rgba(79,172,254,0.3); border-radius:22px;
+        padding:22px; box-shadow:0 24px 64px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset;
         transform:translateY(20px) scale(0.96); opacity:0;
         transition:0.25s cubic-bezier(.34,1.56,.64,1); pointer-events:none;
     }
@@ -267,6 +313,36 @@
     .qe-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
     .qe-row select, .qe-row input { margin:0; font-size:0.82em; padding:9px 10px; border-radius:10px; }
 
+    /* ── PM DASHBOARD ── */
+    .pm-grid {
+        display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap:18px; padding:20px 22px;
+    }
+
+    /* ── SCROLLBAR PREMIUM ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius:10px; }
+    ::-webkit-scrollbar-thumb { background: rgba(79,172,254,0.3); border-radius:10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(79,172,254,0.55); }
+
+    /* ── SELECTION ── */
+    ::selection { background: rgba(79,172,254,0.3); color:#fff; }
+
+    /* ── CHART BOX BORDER GLOW ── */
+    .glass:has(canvas) { border-color: rgba(79,172,254,0.12); }
+
+    /* ── ANIMATE PM GRID IN ── */
+    #pmDashGrid > div {
+        animation: pmCardIn 0.35s ease both;
+    }
+    #pmDashGrid > div:nth-child(2) { animation-delay: 0.05s; }
+    #pmDashGrid > div:nth-child(3) { animation-delay: 0.10s; }
+    #pmDashGrid > div:nth-child(4) { animation-delay: 0.15s; }
+    #pmDashGrid > div:nth-child(5) { animation-delay: 0.20s; }
+    @keyframes pmCardIn {
+        from { opacity:0; transform:translateY(14px) scale(0.98); }
+        to   { opacity:1; transform:translateY(0)    scale(1); }
+    }
 </style>
 </head>
 <body>
@@ -411,6 +487,7 @@
                 <button class="tab-btn" id="tab-proy" onclick="switchTab('proy')">📁 Proyectos</button>
                 <button class="tab-btn" id="tab-act"  onclick="switchTab('act')">⚙ Actividades</button>
                 <button class="tab-btn" id="tab-line" onclick="switchTab('line')">📈 Tendencia</button>
+                <button class="tab-btn pm-only hidden" id="tab-pm" onclick="switchTab('pm')">📊 PM Dashboard</button>
             </div>
         </div>
         <!-- Panel ING (solo PM) -->
@@ -440,6 +517,10 @@
                 <canvas id="cLine" width="1400" height="480"></canvas>
                 <div id="ovS" class="canva-overlay" style="top:auto; bottom:40px;"></div>
             </div>
+        </div>
+        <!-- Panel PM DASHBOARD (solo PM) -->
+        <div class="tab-panel hidden" id="panel-pm">
+            <div class="pm-grid" id="pmDashGrid"></div>
         </div>
     </div>
 
@@ -619,6 +700,8 @@
 
             if(user.rol==='pm'){
                 $('pmTools').classList.remove('hidden'); fillIngs();
+                // Mostrar botón PM Dashboard
+                document.querySelectorAll('.pm-only').forEach(el=>el.classList.remove('hidden'));
                 switchTab('ing');
                 updatePMAlert();
             } else {
@@ -634,6 +717,7 @@
             render();
             renderFavPanel();
             updateDailyBar();
+            setupCanvasResize();
             window.addEventListener('resize', () => { if(user) render(); });
         }
     }
@@ -687,7 +771,7 @@
         }
         d.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
         renderT(d); renderC(d); updateKPIs(d);
-        if(user.rol==='pm') updateProyFilter();
+        if(user.rol==='pm') { updateProyFilter(); if(tabActiva==='pm') renderPMDashboard(d); }
     }
 
     function updateKPIs(d) {
@@ -757,84 +841,125 @@
 
     function draw(id, data, color, esL = false) {
         const c=$(id); if(!c) return;
-        const ctx=c.getContext("2d");
-        const W=c.width, H=c.height;
+        const dpr = window.devicePixelRatio || 1;
+        const wrapper = c.parentElement;
+        const cssW = wrapper.clientWidth - 40;
+        if(cssW < 80) return;
+        const cssH = Math.round(cssW * 0.33);
+        c.width  = Math.round(cssW * dpr);
+        c.height = Math.round(cssH * dpr);
+        c.style.width  = cssW + 'px';
+        c.style.height = cssH + 'px';
+        const ctx = c.getContext('2d');
+        ctx.scale(dpr, dpr);
+        const W = cssW, H = cssH;
         ctx.clearRect(0,0,W,H);
         const ks=Object.keys(data), vs=Object.values(data); if(!ks.length) return;
         const max=Math.max(...vs, esL?META:1);
-        const PL=44, PR=16, PT=24, PB=38;
+        const PL=52, PR=20, PT=28, PB=46;
         const gW=W-PL-PR, gH=H-PT-PB;
 
+        // Fondo suave del área del gráfico
+        ctx.fillStyle='rgba(0,0,0,0.18)';
+        ctx.beginPath(); ctx.roundRect(PL,PT,gW,gH,4); ctx.fill();
+
         // Cuadrícula y eje Y
-        ctx.font="10px Segoe UI,Arial"; ctx.textAlign="right";
-        [0,0.25,0.5,0.75,1].forEach(t=>{
+        const gridLevels = [0,0.25,0.5,0.75,1];
+        gridLevels.forEach(t=>{
             const yg=PT+gH*(1-t), val=(max*t).toFixed(1);
-            ctx.strokeStyle="rgba(255,255,255,0.06)"; ctx.lineWidth=1; ctx.setLineDash([4,4]);
-            ctx.beginPath(); ctx.moveTo(PL,yg); ctx.lineTo(PL+gW,yg); ctx.stroke();
-            ctx.setLineDash([]); ctx.fillStyle="rgba(255,255,255,0.3)";
-            ctx.fillText(val+"h", PL-4, yg+3.5);
+            if(t>0) {
+                ctx.strokeStyle=t===0.5?'rgba(255,255,255,0.07)':'rgba(255,255,255,0.04)';
+                ctx.lineWidth=t===0.5?1.5:1; ctx.setLineDash([4,5]);
+                ctx.beginPath(); ctx.moveTo(PL,yg); ctx.lineTo(PL+gW,yg); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            ctx.fillStyle='rgba(255,255,255,0.28)';
+            ctx.font=`${11}px "Segoe UI",system-ui,Arial`; ctx.textAlign='right';
+            ctx.fillText(val+'h', PL-8, yg+4);
         });
         ctx.setLineDash([]);
 
         if(esL){
             const step=(ks.length>1?gW/(ks.length-1):gW);
-
-            // Línea meta punteada
+            // Línea meta
             const ym=PT+gH-(META/max*gH);
-            ctx.setLineDash([6,4]); ctx.strokeStyle="rgba(255,80,60,0.5)"; ctx.lineWidth=1.5;
+            ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(255,80,60,0.45)'; ctx.lineWidth=1.5;
             ctx.beginPath(); ctx.moveTo(PL,ym); ctx.lineTo(PL+gW,ym); ctx.stroke();
-            ctx.setLineDash([]); ctx.fillStyle="rgba(255,100,80,0.7)"; ctx.font="9px Segoe UI,Arial"; ctx.textAlign="left";
-            ctx.fillText("Meta "+META+"h", PL+4, ym-4);
+            ctx.setLineDash([]);
+            ctx.fillStyle='rgba(255,100,80,0.6)';
+            ctx.font=`10px "Segoe UI",Arial`; ctx.textAlign='left';
+            ctx.fillText('Meta '+META+'h', PL+6, ym-5);
 
-            // Relleno bajo curva
+            // Relleno bajo curva con gradiente
             const gr=ctx.createLinearGradient(0,PT,0,PT+gH);
-            gr.addColorStop(0,"rgba(79,172,254,0.22)"); gr.addColorStop(1,"rgba(79,172,254,0.02)");
+            gr.addColorStop(0,'rgba(79,172,254,0.25)'); gr.addColorStop(1,'rgba(79,172,254,0.01)');
             ctx.beginPath();
             ks.forEach((k,i)=>{ const x=PL+i*step,y=PT+gH-(vs[i]/max*gH); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
             ctx.lineTo(PL+(ks.length-1)*step,PT+gH); ctx.lineTo(PL,PT+gH); ctx.closePath();
             ctx.fillStyle=gr; ctx.fill();
 
-            // Línea principal suave
-            ctx.beginPath(); ctx.lineWidth=2.5; ctx.strokeStyle=color; ctx.lineJoin="round";
+            // Línea principal
+            ctx.beginPath(); ctx.lineWidth=2.5; ctx.strokeStyle=color; ctx.lineJoin='round'; ctx.lineCap='round';
             ks.forEach((k,i)=>{ const x=PL+i*step,y=PT+gH-(vs[i]/max*gH); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
             ctx.stroke();
 
-            // Puntos + etiquetas
-            const cada=Math.max(1,Math.ceil(ks.length/7));
+            // Puntos y etiquetas
+            const cada=Math.max(1,Math.ceil(ks.length/8));
             ks.forEach((k,i)=>{
                 const x=PL+i*step, y=PT+gH-(vs[i]/max*gH), ok=vs[i]>=META;
-                ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
-                ctx.fillStyle=ok?"rgba(46,204,113,0.25)":"rgba(255,75,43,0.25)"; ctx.fill();
-                ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
-                ctx.fillStyle=ok?"#2ecc71":"#ff4b2b"; ctx.fill();
-                if(ks.length<=25){ ctx.fillStyle="rgba(255,255,255,0.7)"; ctx.font="9px Segoe UI,Arial"; ctx.textAlign="center"; ctx.fillText(vs[i].toFixed(1)+"h",x,y-9); }
-                if(i%cada===0||i===ks.length-1){ ctx.fillStyle="rgba(255,255,255,0.35)"; ctx.font="9px Segoe UI,Arial"; ctx.textAlign="center"; ctx.fillText(k.length>=10?k.slice(5):k,x,PT+gH+PB-6); }
+                // Halo
+                ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2);
+                ctx.fillStyle=ok?'rgba(46,204,113,0.15)':'rgba(255,75,43,0.15)'; ctx.fill();
+                // Punto relleno
+                ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+                ctx.fillStyle=ok?'#2ecc71':'#ff4b2b'; ctx.fill();
+                ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+                ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=1; ctx.stroke();
+
+                if(ks.length<=30){ ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font=`10px "Segoe UI",Arial`; ctx.textAlign='center'; ctx.fillText(vs[i].toFixed(1)+'h',x,y-11); }
+                if(i%cada===0||i===ks.length-1){
+                    ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font=`10px "Segoe UI",Arial`; ctx.textAlign='center';
+                    ctx.fillText(k.length>=10?k.slice(5):k, x, PT+gH+PB-8);
+                }
             });
 
         } else {
-            const slotW=gW/ks.length, barW=Math.min(slotW*0.6,52), r=4;
+            const slotW=gW/ks.length, barW=Math.min(Math.max(slotW*0.55,12),64), r=6;
+            // Paleta multicolor para barras
+            const palette = ['#4facfe','#00f2fe','#7f5af0','#ffa502','#2ecc71','#ff4b2b','#e040fb','#26c6da'];
             ks.forEach((k,i)=>{
-                const bh=(vs[i]/max*gH), x=PL+i*slotW+(slotW-barW)/2, y=PT+gH-bh;
-                // Barra redondeada arriba
-                ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+barW-r,y);
-                ctx.arcTo(x+barW,y,x+barW,y+r,r); ctx.lineTo(x+barW,PT+gH);
-                ctx.lineTo(x,PT+gH); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
-                ctx.closePath(); ctx.fillStyle=color; ctx.fill();
-                // Brillo
+                const bh=Math.max(vs[i]/max*gH,2), x=PL+i*slotW+(slotW-barW)/2, y=PT+gH-bh;
+                const bColor = color === '#ffa502' ? palette[(i*2)%palette.length] : color;
+                // Sombra suave bajo barra
+                ctx.beginPath(); ctx.roundRect(x+2,y+4,barW,bh,r);
+                ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fill();
+                // Barra principal
+                ctx.beginPath(); ctx.roundRect(x,y,barW,bh,r);
+                ctx.fillStyle=bColor; ctx.fill();
+                // Brillo top
                 const sh=ctx.createLinearGradient(x,y,x+barW,y);
-                sh.addColorStop(0,"rgba(255,255,255,0.14)"); sh.addColorStop(1,"rgba(255,255,255,0)");
+                sh.addColorStop(0,'rgba(255,255,255,0.18)'); sh.addColorStop(0.5,'rgba(255,255,255,0.06)'); sh.addColorStop(1,'rgba(255,255,255,0)');
                 ctx.fillStyle=sh; ctx.fill();
                 // Valor
-                ctx.fillStyle="rgba(255,255,255,0.85)"; ctx.font="bold 10px Segoe UI,Arial"; ctx.textAlign="center";
-                ctx.fillText(vs[i].toFixed(1)+"h", x+barW/2, y-6);
-                // Label eje X truncado
-                const lbl=k.length>12?k.substring(0,11)+"…":k;
-                ctx.fillStyle="rgba(255,255,255,0.38)"; ctx.font="9px Segoe UI,Arial";
-                ctx.fillText(lbl, x+barW/2, PT+gH+PB-6);
+                ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font=`bold 11px "Segoe UI",Arial`; ctx.textAlign='center';
+                if(bh > 18) ctx.fillText(vs[i].toFixed(1)+'h', x+barW/2, y-7);
+                // Label eje X
+                const lbl=k.length>13?k.substring(0,12)+'…':k;
+                ctx.fillStyle='rgba(255,255,255,0.38)'; ctx.font=`10px "Segoe UI",Arial`;
+                // Rotar label si hay muchos
+                if(ks.length > 8) {
+                    ctx.save(); ctx.translate(x+barW/2, PT+gH+10);
+                    ctx.rotate(-Math.PI/5); ctx.textAlign='right';
+                    ctx.fillText(lbl, 0, 0); ctx.restore();
+                } else {
+                    ctx.fillText(lbl, x+barW/2, PT+gH+PB-8);
+                }
             });
         }
-        // Eje Y línea
-        ctx.strokeStyle="rgba(255,255,255,0.1)"; ctx.lineWidth=1; ctx.setLineDash([]);
+        // Eje Y
+        const axGrad = ctx.createLinearGradient(PL,PT,PL,PT+gH);
+        axGrad.addColorStop(0,'rgba(79,172,254,0.4)'); axGrad.addColorStop(1,'rgba(79,172,254,0.08)');
+        ctx.strokeStyle=axGrad; ctx.lineWidth=1.5; ctx.setLineDash([]);
         ctx.beginPath(); ctx.moveTo(PL,PT); ctx.lineTo(PL,PT+gH); ctx.stroke();
     }
 
@@ -849,22 +974,36 @@
     // --- TABS DE GRÁFICOS ---
     window.switchTab = function(tab) {
         if(tab === 'ing' && user.rol !== 'pm') tab = 'proy';
+        if(tab === 'pm'  && user.rol !== 'pm') tab = 'proy';
         tabActiva = tab;
-        ['ing','proy','act','line'].forEach(t => {
+        ['ing','proy','act','line','pm'].forEach(t => {
             const panel = $('panel-'+t);
             const btn   = $('tab-'+t);
             if(panel) panel.classList.toggle('hidden', t !== tab);
             if(btn)   btn.classList.toggle('active', t === tab);
         });
+        if(tab === 'pm') {
+            // Renderizar PM Dashboard con datos actuales
+            let d = [...dbR];
+            if($('fIng') && $('fIng').value) d=d.filter(r=>r.ing===$('fIng').value);
+            if($('fProy') && $('fProy').value) d=d.filter(r=>r.proy===$('fProy').value);
+            if($('fD') && $('fD').value) d=d.filter(r=>r.fecha>=$('fD').value);
+            if($('fH') && $('fH').value) d=d.filter(r=>r.fecha<=$('fH').value);
+            renderPMDashboard(d);
+            return;
+        }
         // Redibujar canvas activo con tamaño real del contenedor
         const ids = { ing:'cIng', proy:'cProy', act:'cAct', line:'cLine' };
         const cv = $(ids[tab]);
         if(cv) {
             const wrapper = cv.parentElement;
-            const realW = wrapper.clientWidth - 40; // descontar padding
+            const realW = wrapper.clientWidth - 40;
             if(realW > 100) {
-                cv.width  = realW * (window.devicePixelRatio || 1);
-                cv.height = Math.round(realW * 0.30 * (window.devicePixelRatio || 1));
+                const dpr = window.devicePixelRatio || 1;
+                cv.width  = Math.round(realW * dpr);
+                cv.height = Math.round(realW * 0.30 * dpr);
+                cv.style.width  = realW + 'px';
+                cv.style.height = Math.round(realW * 0.30) + 'px';
             }
             setTimeout(() => render(), 10);
         }
@@ -1248,6 +1387,301 @@
         }, 600);
     }
 
+
+    // ── RESIZE OBSERVER PARA CANVAS ─────────────────
+    // Corrige el recorte de gráficos ajustando el canvas al ancho real del contenedor
+    function setupCanvasResize() {
+        const canvasIds = ['cIng','cProy','cAct','cLine'];
+        canvasIds.forEach(id => {
+            const cv = document.getElementById(id);
+            if(!cv) return;
+            const wrapper = cv.parentElement;
+            const ro = new ResizeObserver(() => {
+                const w = wrapper.clientWidth - 40;
+                if(w < 100) return;
+                const dpr = window.devicePixelRatio || 1;
+                cv.width  = Math.round(w * dpr);
+                cv.height = Math.round(w * 0.30 * dpr);
+                cv.style.width  = w + 'px';
+                cv.style.height = Math.round(w * 0.30) + 'px';
+                if(user) render();
+            });
+            ro.observe(wrapper);
+        });
+    }
+
+    // ── HH PROYECTADAS POR PROYECTO (del Excel base) ──
+    // Estos valores vienen del ResumenHH del Excel original
+    const HH_PROYECTADAS = {
+        'CSE-2256613': 4044.56,
+        'CSV-2263319': 2854.30,
+        '005-PTR':     4700.33,
+        'G639':         788.06,
+        'VLTL-01':    1295.43,
+        'JNK-MLG-01':  985.00,
+        'EDF-BSL6':      null,  // calculado por sub-proyectos
+        'SDI2':          null,
+        'DD-UNRG':     224.80,
+        'DD-COX':     1525.89,
+        'DD-FMO':      207.95,
+        'DD-ATL':      186.90,
+        'DD-KAI':      144.71,
+        'DD-CFM':      298.42,
+    };
+
+    // ── PM DASHBOARD — Chart.js premium ─────────────────────────────────
+    let pmCharts = {};
+    function destroyPMCharts() {
+        Object.values(pmCharts).forEach(ch => { try { ch.destroy(); } catch(e){} });
+        pmCharts = {};
+    }
+
+    function renderPMDashboard(d) {
+        const grid = document.getElementById('pmDashGrid');
+        if(!grid) return;
+        destroyPMCharts();
+
+        const totalH = d.reduce((s,r)=>s+r.horas, 0);
+        if(!totalH) {
+            grid.innerHTML = '<div style="padding:60px;text-align:center;color:rgba(255,255,255,0.25);font-size:0.9em">Sin datos en el período seleccionado</div>';
+            return;
+        }
+
+        const byProy = {}, byIng = {}, byAct = {};
+        d.forEach(r => {
+            const cod = r.proy.split(' | ')[0].trim();
+            byProy[cod] = (byProy[cod]||0) + r.horas;
+            byIng[r.ing] = (byIng[r.ing]||0) + r.horas;
+            byAct[r.act||'Sin actividad'] = (byAct[r.act||'Sin actividad']||0) + r.horas;
+        });
+
+        const ingenieros = dbU.filter(u=>u.rol==='ingeniero');
+        const ingStats = {};
+        ingenieros.forEach(u => {
+            const regs = d.filter(r=>r.ing===u.user);
+            const dias = [...new Set(regs.map(r=>r.fecha))];
+            const diasCumplidos = dias.filter(f => regs.filter(r=>r.fecha===f).reduce((s,r)=>s+r.horas,0)>=META);
+            ingStats[u.user] = {
+                total: regs.reduce((s,r)=>s+r.horas,0),
+                dias: dias.length, cumplidos: diasCumplidos.length,
+                eficiencia: dias.length ? (diasCumplidos.length/dias.length)*100 : 0
+            };
+        });
+
+        const proyEntries = Object.entries(byProy).sort((a,b)=>b[1]-a[1]);
+        const ingEntries  = Object.entries(byIng).sort((a,b)=>b[1]-a[1]);
+        const actEntries  = Object.entries(byAct).sort((a,b)=>b[1]-a[1]);
+        const diasUnicos  = [...new Set(d.map(r=>r.fecha))];
+        const promDiario  = diasUnicos.length ? totalH/diasUnicos.length : 0;
+
+        const COLORS = ['#4facfe','#00f2fe','#7f5af0','#ffa502','#2ecc71','#e040fb','#ff4b2b','#26c6da','#ffca28','#ab47bc'];
+        const cardCss = `background:linear-gradient(145deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:22px;overflow:hidden;`;
+        const hCss   = `margin:0 0 18px;font-size:0.78em;color:rgba(0,242,254,0.8);letter-spacing:.1em;text-transform:uppercase;font-weight:700;`;
+
+        // ─── CARD KPIs ejecutivos ───
+        const efGlobal = ingenieros.length ?
+            (ingenieros.reduce((s,u)=>s+(ingStats[u.user]?.eficiencia||0),0)/ingenieros.length).toFixed(0) : 0;
+        let cardKPIs = `<div style="${cardCss}grid-column:1/-1">
+            <p style="${hCss}">Resumen Ejecutivo · Período filtrado</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">`;
+        const kpis = [
+            { val: totalH.toFixed(1)+'h',  lbl:'HH Totales',        clr:'#00f2fe' },
+            { val: promDiario.toFixed(1)+'h', lbl:'Promedio Diario', clr:'#4facfe' },
+            { val: diasUnicos.length,       lbl:'Días Registrados',  clr:'#7f5af0' },
+            { val: Object.keys(byProy).length, lbl:'Proyectos Activos', clr:'#ffa502' },
+            { val: ingEntries.length,       lbl:'Ingenieros Activos', clr:'#2ecc71' },
+            { val: efGlobal+'%',            lbl:'Eficiencia Global',  clr:'#e040fb' },
+        ];
+        kpis.forEach(k => {
+            cardKPIs += `<div style="background:rgba(0,0,0,0.25);border-radius:14px;padding:16px;text-align:center;border:1px solid rgba(255,255,255,0.05);">
+                <span style="display:block;font-size:1.75em;font-weight:800;color:${k.clr};letter-spacing:-0.5px;line-height:1">${k.val}</span>
+                <label style="font-size:0.68em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-top:5px;display:block">${k.lbl}</label>
+            </div>`;
+        });
+        cardKPIs += '</div></div>';
+
+        // ─── CARD: HH Ejecutadas vs Proyectadas — Chart.js barras horizontales ───
+        const hhRows = proyEntries.map(([cod, hEx]) => {
+            const hProy = HH_PROYECTADAS[cod] || null;
+            const pct = hProy ? ((hEx/hProy)*100) : null;
+            return { cod, hEx, hProy, pct };
+        });
+        const hhCanvasId = 'chartHH_'+Date.now();
+        const hhH = Math.max(hhRows.length * 44 + 60, 180);
+        let cardHH = `<div style="${cardCss}grid-column:1/-1">
+            <p style="${hCss}">HH Ejecutadas vs. Proyectadas por Proyecto</p>
+            <div style="position:relative;width:100%;height:${hhH}px">
+                <canvas id="${hhCanvasId}" role="img" aria-label="Barras HH ejecutadas vs proyectadas por proyecto"></canvas>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:0.75em;color:rgba(255,255,255,0.5);">
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#4facfe;display:inline-block"></span>HH Ejecutadas</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.18);display:inline-block"></span>HH Proyectadas</span>
+                <span style="display:flex;align-items:center;gap:5px;margin-left:auto;color:rgba(255,255,255,0.35);font-size:0.9em;font-style:italic">Semáforo: verde &lt;75% · amarillo 75–100% · rojo &gt;100%</span>
+            </div>
+        </div>`;
+
+        // ─── CARD: % tiempo por ingeniero — Chart.js donut ───
+        const ingDonutId = 'chartIng_'+Date.now();
+        let cardIng = `<div style="${cardCss}">
+            <p style="${hCss}">% Tiempo por Ingeniero</p>
+            <div style="position:relative;width:100%;height:280px">
+                <canvas id="${ingDonutId}" role="img" aria-label="Distribución porcentual de horas por ingeniero"></canvas>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px;">`;
+        ingEntries.forEach(([ing,h],i)=>{
+            const pct = ((h/totalH)*100).toFixed(1);
+            cardIng += `<div style="display:flex;align-items:center;gap:8px;font-size:0.8em;">
+                <span style="width:10px;height:10px;border-radius:50%;background:${COLORS[i%COLORS.length]};flex-shrink:0"></span>
+                <span style="color:#ccc;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ing}</span>
+                <span style="color:${COLORS[i%COLORS.length]};font-weight:700">${pct}%</span>
+                <span style="color:rgba(255,255,255,0.35)">${h.toFixed(1)}h</span>
+            </div>`;
+        });
+        cardIng += '</div></div>';
+
+        // ─── CARD: Actividades — Chart.js donut ───
+        const actDonutId = 'chartAct_'+Date.now();
+        const actColors2 = ['#7f5af0','#ffa502','#00f2fe','#2ecc71','#ff4b2b','#4facfe'];
+        let cardAct = `<div style="${cardCss}">
+            <p style="${hCss}">Distribución de Actividades</p>
+            <div style="position:relative;width:100%;height:280px">
+                <canvas id="${actDonutId}" role="img" aria-label="Distribución de horas por tipo de actividad"></canvas>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px;">`;
+        actEntries.forEach(([act,h],i)=>{
+            const pct = ((h/totalH)*100).toFixed(1);
+            cardAct += `<div style="display:flex;align-items:center;gap:8px;font-size:0.8em;">
+                <span style="width:10px;height:10px;border-radius:2px;background:${actColors2[i%actColors2.length]};flex-shrink:0"></span>
+                <span style="color:#ccc;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${act}</span>
+                <span style="color:${actColors2[i%actColors2.length]};font-weight:700">${pct}%</span>
+            </div>`;
+        });
+        cardAct += '</div></div>';
+
+        // ─── CARD: Eficiencia ingenieros ───
+        let cardEfi = `<div style="${cardCss}grid-column:1/-1">
+            <p style="${hCss}">Eficiencia por Ingeniero — Días con meta ≥ ${META}h</p>
+            <div style="overflow-x:auto">
+            <table style="margin-top:0">
+                <thead><tr>
+                    <th>Ingeniero</th><th>HH Total</th><th>Días Reg.</th><th>Días con meta</th><th>Eficiencia</th><th>Barra</th>
+                </tr></thead><tbody>`;
+        Object.entries(ingStats).sort((a,b)=>b[1].eficiencia-a[1].eficiencia).forEach(([ing,st]) => {
+            const cls = st.eficiencia>=80?'ok':st.eficiencia>=50?'warn':'bad';
+            const badgeC = st.eficiencia>=80?'rgba(46,204,113,.85)':st.eficiencia>=50?'rgba(255,165,2,.85)':'rgba(255,75,43,.85)';
+            cardEfi += `<tr>
+                <td style="color:#e8eaf2;font-weight:600">${ing}</td>
+                <td style="color:#00f2fe">${st.total.toFixed(1)}h</td>
+                <td>${st.dias}</td>
+                <td>${st.cumplidos}</td>
+                <td><span style="background:${badgeC};color:#000;padding:2px 10px;border-radius:20px;font-size:0.78em;font-weight:700">${st.eficiencia.toFixed(0)}%</span></td>
+                <td style="width:160px;min-width:100px">
+                    <div style="background:rgba(255,255,255,0.06);border-radius:8px;height:8px;overflow:hidden">
+                        <div style="height:100%;border-radius:8px;width:${st.eficiencia.toFixed(1)}%;background:${badgeC};transition:width 0.7s ease"></div>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        cardEfi += '</tbody></table></div></div>';
+
+        grid.innerHTML = cardKPIs + cardHH + cardIng + cardAct + cardEfi;
+
+        // Cargar Chart.js y renderizar gráficos
+        function buildCharts() {
+            if(typeof Chart === 'undefined') return;
+
+            // Defaults globales oscuros
+            Chart.defaults.color = 'rgba(255,255,255,0.45)';
+            Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+            Chart.defaults.font.family = '"Segoe UI",system-ui,Arial';
+            Chart.defaults.font.size = 11;
+
+            // ── Barras HH ejecutadas vs proyectadas ──
+            const hhEl = document.getElementById(hhCanvasId);
+            if(hhEl) {
+                const labels = hhRows.map(r=>r.cod);
+                const executed = hhRows.map(r=>r.hEx);
+                const projected = hhRows.map(r=>r.hProy);
+                const barColors = hhRows.map(r=>{
+                    if(!r.hProy) return '#4facfe';
+                    const p = r.pct;
+                    return p>=100?'rgba(255,75,43,0.85)':p>=75?'rgba(255,165,2,0.85)':'rgba(79,172,254,0.85)';
+                });
+                pmCharts.hh = new Chart(hhEl, {
+                    type:'bar',
+                    data:{
+                        labels,
+                        datasets:[
+                            { label:'HH Ejecutadas', data:executed, backgroundColor:barColors, borderRadius:6, borderSkipped:false, order:1 },
+                            { label:'HH Proyectadas', data:projected, backgroundColor:'rgba(255,255,255,0.1)', borderColor:'rgba(255,255,255,0.22)', borderWidth:1, borderRadius:6, borderSkipped:false, order:2 }
+                        ]
+                    },
+                    options:{
+                        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+                        plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+                            label: ctx=>{
+                                const row = hhRows[ctx.dataIndex];
+                                if(ctx.datasetIndex===0) return ' Ejecutado: '+ctx.parsed.x.toFixed(1)+'h'+(row.pct?' ('+row.pct.toFixed(1)+'% del proyectado)':'');
+                                return ' Proyectado: '+(ctx.parsed.x?ctx.parsed.x.toFixed(1)+'h':'N/D');
+                            }
+                        }, backgroundColor:'rgba(10,12,28,0.95)', borderColor:'rgba(79,172,254,0.3)', borderWidth:1, padding:12, cornerRadius:10}},
+                        scales:{
+                            x:{ grid:{color:'rgba(255,255,255,0.05)'}, ticks:{callback:v=>v+'h'} },
+                            y:{ grid:{display:false}, ticks:{font:{size:11},color:'rgba(255,255,255,0.6)'} }
+                        }
+                    }
+                });
+            }
+
+            // ── Donut ingenieros ──
+            const ingEl = document.getElementById(ingDonutId);
+            if(ingEl) {
+                pmCharts.ing = new Chart(ingEl, {
+                    type:'doughnut',
+                    data:{
+                        labels: ingEntries.map(e=>e[0]),
+                        datasets:[{ data: ingEntries.map(e=>e[1]), backgroundColor: ingEntries.map((_,i)=>COLORS[i%COLORS.length]),
+                            borderColor:'rgba(0,0,0,0.4)', borderWidth:2, hoverOffset:8 }]
+                    },
+                    options:{
+                        responsive:true, maintainAspectRatio:false, cutout:'68%',
+                        plugins:{ legend:{display:false},
+                            tooltip:{ callbacks:{ label: ctx=>' '+ctx.label+': '+ctx.parsed.toFixed(1)+'h ('+((ctx.parsed/totalH)*100).toFixed(1)+'%)' },
+                                backgroundColor:'rgba(10,12,28,0.95)', borderColor:'rgba(79,172,254,0.3)', borderWidth:1, padding:12, cornerRadius:10 }}
+                    }
+                });
+            }
+
+            // ── Donut actividades ──
+            const actEl = document.getElementById(actDonutId);
+            if(actEl) {
+                pmCharts.act = new Chart(actEl, {
+                    type:'doughnut',
+                    data:{
+                        labels: actEntries.map(e=>e[0]),
+                        datasets:[{ data: actEntries.map(e=>e[1]), backgroundColor: actEntries.map((_,i)=>actColors2[i%actColors2.length]),
+                            borderColor:'rgba(0,0,0,0.4)', borderWidth:2, hoverOffset:8 }]
+                    },
+                    options:{
+                        responsive:true, maintainAspectRatio:false, cutout:'65%',
+                        plugins:{ legend:{display:false},
+                            tooltip:{ callbacks:{ label: ctx=>' '+ctx.label+': '+ctx.parsed.toFixed(1)+'h ('+((ctx.parsed/totalH)*100).toFixed(1)+'%)' },
+                                backgroundColor:'rgba(10,12,28,0.95)', borderColor:'rgba(79,172,254,0.3)', borderWidth:1, padding:12, cornerRadius:10 }}
+                    }
+                });
+            }
+        }
+
+        if(typeof Chart !== 'undefined') {
+            buildCharts();
+        } else {
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+            s.onload = buildCharts;
+            document.head.appendChild(s);
+        }
+    }
+
     // Escuchar cambio manual en input de fecha QE
     document.addEventListener('DOMContentLoaded', () => {
         const qf = $('qeFecha');
@@ -1259,12 +1693,24 @@
         });
     });
 
+    // ── roundRect polyfill para Safari / Chrome < 99 ──
+    if(!CanvasRenderingContext2D.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+            if(typeof r==='number') r={tl:r,tr:r,br:r,bl:r};
+            const {tl=0,tr=0,br=0,bl=0}=r||{};
+            this.moveTo(x+tl,y);
+            this.lineTo(x+w-tr,y); this.quadraticCurveTo(x+w,y,x+w,y+tr);
+            this.lineTo(x+w,y+h-br); this.quadraticCurveTo(x+w,y+h,x+w-br,y+h);
+            this.lineTo(x+bl,y+h); this.quadraticCurveTo(x,y+h,x,y+h-bl);
+            this.lineTo(x,y+tl); this.quadraticCurveTo(x,y,x+tl,y);
+            return this;
+        };
+    }
+
     init();
 </script>
 </body>
 </html>
-
-
 
 
 
