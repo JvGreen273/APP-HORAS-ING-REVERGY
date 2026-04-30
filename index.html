@@ -429,6 +429,7 @@
                 <option value="SDI2">SDI2 - Sol de Inirida 2</option>
                 <option value="BSL6">BSL6 - Bosques Solares de Los Llanos 6</option>
                 <option value="ING">ING</option>
+                <option value="SST-ING">SST-ING</option>
             </select>
             <select id="codPC">
                 <option value="">Código P+C...</option>
@@ -568,6 +569,7 @@
             <option value="SDI2">SDI2 - Sol de Inirida 2</option>
             <option value="BSL6">BSL6 - Bosques Solares de Los Llanos 6</option>
             <option value="ING">ING</option>
+            <option value="SST-ING">SST-ING</option>
         </select>
     </div>
     <select id="qeCodPC" style="width:100%; margin-top:6px; font-size:0.82em; padding:9px 10px; border-radius:10px;">
@@ -739,6 +741,7 @@
         else if (principal === "SDI2") opciones = ["SDI2-Gestión", "SDI2-Ingeniería", "SDI2-MesaTrabajo", "SDI2-Previos"];
         else if (principal === "BSL6") opciones = ["BSL6-Gestión", "BSL6-Ingeniería", "BSL6-MesaTrabajo", "BSL6-Previos"];
         else if (principal === "ING") opciones = ["GST-ING", "OFC-ING", "CLD-ING", "OFT-ING", "CAP-ING", "LCC"];
+        else if (principal === "SST-ING") opciones = ["GST-SST","CAP-SST","DOC-SST","AUD-SST","INS-SST"];    
         else if (principal !== "") opciones = [principal + "-P+C"];
         opciones.forEach(opt => {
             const el = document.createElement("option"); el.value = opt; el.innerText = opt; sub.appendChild(el);
