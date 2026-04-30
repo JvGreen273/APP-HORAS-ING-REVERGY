@@ -1316,6 +1316,7 @@
         else if(principal === 'SDI2') opts = ['SDI2-Gestión','SDI2-Ingeniería','SDI2-MesaTrabajo','SDI2-Previos'];
         else if(principal === 'BSL6') opts = ['BSL6-Gestión','BSL6-Ingeniería','BSL6-MesaTrabajo','BSL6-Previos'];
         else if(principal === 'ING') opts = ['GST-ING','OFC-ING','CLD-ING','OFT-ING','CAP-ING','LCC'];
+        else if (principal === 'SST-ING') opts = ['GST-SST','CAP-SST','DOC-SST','AUD-SST','INS-SST'];
         else if(principal) opts = [principal+'-P+C'];
         opts.forEach(o => { const el = document.createElement('option'); el.value=o; el.textContent=o; sub.appendChild(el); });
         if(opts.length === 1) sub.value = opts[0];
