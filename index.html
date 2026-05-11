@@ -343,6 +343,91 @@
         from { opacity:0; transform:translateY(14px) scale(0.98); }
         to   { opacity:1; transform:translateY(0)    scale(1); }
     }
+
+    /* ══════════════════════════════════════
+       ADDITIONS: TIMER · HEATMAP · NÓMINA
+       ══════════════════════════════════════ */
+
+    /* ── TIMER / FICHAR ── */
+    #timerDisplay {
+        font-family:'Courier New',monospace; font-size:1.05em; font-weight:700;
+        color:rgba(255,255,255,0.35); letter-spacing:.06em; min-width:82px;
+        text-align:center; transition:color 0.4s, text-shadow 0.4s;
+    }
+    #timerDisplay.running {
+        color:var(--success);
+        text-shadow:0 0 14px rgba(46,204,113,0.5);
+        animation: timerPulse 2s ease-in-out infinite;
+    }
+    @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:0.75} }
+    #timerBtn {
+        background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.6);
+        border:1px solid rgba(255,255,255,0.1); font-size:0.8em;
+        padding:8px 16px; border-radius:20px; white-space:nowrap;
+    }
+    #timerBtn:hover { background:rgba(46,204,113,0.12); color:var(--success); border-color:rgba(46,204,113,0.3); transform:none; box-shadow:none; }
+    #timerBtn.running { background:rgba(255,75,43,0.12); color:var(--danger); border-color:rgba(255,75,43,0.3); }
+    #timerBtn.running:hover { background:rgba(255,75,43,0.22); }
+
+    /* ── HEATMAP ── */
+    #heatSection { padding:14px 22px 18px; margin-bottom:16px; }
+    #heatSection .heat-header {
+        display:flex; align-items:center; justify-content:space-between;
+        margin-bottom:14px; flex-wrap:wrap; gap:10px;
+    }
+    #heatSection .heat-title {
+        font-size:0.75em; color:rgba(255,255,255,0.45);
+        text-transform:uppercase; letter-spacing:.09em; font-weight:600;
+    }
+    .heat-legend { display:flex; align-items:center; gap:8px; font-size:0.72em; color:rgba(255,255,255,0.35); }
+    .heat-leg-box { width:13px; height:13px; border-radius:3px; display:inline-block; flex-shrink:0; }
+    .heat-grid { display:flex; gap:5px; flex-wrap:wrap; align-items:flex-end; }
+    .heat-cell {
+        width:18px; height:18px; border-radius:4px; cursor:default;
+        transition:transform 0.12s, opacity 0.2s; position:relative; flex-shrink:0;
+    }
+    .heat-cell:hover { transform:scale(1.4); z-index:5; }
+    .heat-cell.weekend { opacity:0.4; }
+    .heat-cell.today { outline:2px solid rgba(0,242,254,0.8); outline-offset:1px; }
+    .heat-cell[title]:hover::after {
+        content:attr(title); position:absolute; bottom:calc(100%+6px); left:50%;
+        transform:translateX(-50%); white-space:nowrap;
+        background:rgba(8,10,24,0.97); border:1px solid rgba(79,172,254,0.3);
+        padding:5px 10px; border-radius:8px; font-size:0.72em; color:#e8eaf2;
+        pointer-events:none; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    /* ── NÓMINA MODAL ── */
+    #nominaModal {
+        position:fixed; inset:0; z-index:10000;
+        background:rgba(0,0,0,0.78); backdrop-filter:blur(12px);
+        display:flex; align-items:flex-start; justify-content:center;
+        overflow-y:auto; padding:32px 16px;
+    }
+    #nominaModalInner { width:100%; max-width:740px; position:relative; animation:pmCardIn 0.25s ease; }
+    .nemp-row {
+        background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.07);
+        border-radius:16px; padding:16px 18px; margin-bottom:12px;
+    }
+    .nemp-name { font-size:0.9em; color:var(--secondary); font-weight:700; margin-bottom:12px; }
+    .nemp-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .nemp-fields .full { grid-column:1/-1; }
+    .nemp-fields label { font-size:0.7em; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:.06em; margin-bottom:2px; display:block; }
+    .nemp-fields input { margin:0; font-size:0.83em; padding:9px 11px; }
+    .nemp-save-btn {
+        margin-top:10px; width:100%; background:linear-gradient(90deg,var(--secondary),var(--primary));
+        color:#000; border-radius:12px; padding:9px; font-size:0.85em; font-weight:700;
+    }
+    .nemp-save-btn:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,242,254,0.3); }
+
+    /* ── BOTÓN NÓMINA ── */
+    .btn-nomina { background:linear-gradient(135deg,#7f5af0,#4facfe) !important; color:#fff !important; }
+    .btn-nomina:hover { box-shadow:0 6px 20px rgba(127,90,240,0.4) !important; }
+    .btn-cfg-emp {
+        background:rgba(127,90,240,0.1) !important; color:#b8a9ff !important;
+        border:1px solid rgba(127,90,240,0.3) !important;
+    }
+    .btn-cfg-emp:hover { background:rgba(127,90,240,0.22) !important; transform:none; box-shadow:none; }
 </style>
 </head>
 <body>
@@ -386,6 +471,10 @@
         </div>
         <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
             <div id="syncDot" title="Sincronizado con Firebase"></div>
+            <!-- ⏱ TIMER / FICHAR — NUEVO -->
+            <div id="timerDisplay">00:00:00</div>
+            <button id="timerBtn" onclick="toggleTimer()" title="Iniciar / detener temporizador">▶ Fichar</button>
+            <!-- /TIMER -->
             <button onclick="logout()" style="background:var(--danger); color:#fff; width:auto;">Cerrar Sesión</button>
         </div>
     </header>
@@ -400,6 +489,21 @@
         <span id="dailyNum">0 / 6h</span>
     </div>
 
+    <!-- 📅 HEATMAP ASISTENCIA — NUEVO -->
+    <div class="glass" id="heatSection">
+        <div class="heat-header">
+            <span class="heat-title">📅 Asistencia · Últimos 30 días</span>
+            <div class="heat-legend">
+                <span class="heat-leg-box" style="background:rgba(255,255,255,0.06)"></span>0h
+                <span class="heat-leg-box" style="background:rgba(79,172,254,0.35)"></span>&lt;3h
+                <span class="heat-leg-box" style="background:rgba(0,242,254,0.6)"></span>&lt;6h
+                <span class="heat-leg-box" style="background:rgba(46,204,113,0.9)"></span>≥6h ✓
+            </div>
+        </div>
+        <div class="heat-grid" id="heatmapGrid"></div>
+    </div>
+    <!-- /HEATMAP -->
+
     <div class="kpi-container">
         <div class="kpi-card"><label>Total Horas</label><span id="kpiTotal">0</span></div>
         <div class="kpi-card"><label>Días Cumplidos</label><span id="kpiMeta">0</span></div>
@@ -408,53 +512,98 @@
     </div>
 
     <div class="glass">
-        <h3>Cargar Registro</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-            <select id="ingSel"></select>
-            <select id="codProy" onchange="actualizarSubmenu()">
-                <option value="">Código Proyecto...</option>
-                <option value="CSE-2256613">CSE-2256613</option>
-                <option value="CSV-2263319">CSV-2263319</option>
-                <option value="005-PTR">005-PTR</option>
-                <option value="G639">G639</option>
-                <option value="VLTL-01">VLTL-01</option>
-                <option value="DD-UNRG">DD-UNRG</option>
-                <option value="DD-COX">DD-COX</option>
-                <option value="DD-FMO">DD-FMO</option>
-                <option value="DD-ATL">DD-ATL</option>
-                <option value="DD-KAI">DD-KAI</option>
-                <option value="DD-CFM">DD-CFM</option>
-                <option value="JNK-MLG-01">JNK-MLG-01</option>
-                <option value="EDF-BSL6">EDF-BSL6</option>
-                <option value="SDI2">SDI2 - Sol de Inirida 2</option>
-                <option value="BSL6">BSL6 - Bosques Solares de Los Llanos 6</option>
-                <option value="ING">ING</option>
-                <option value="SST-ING">SST-ING</option>
-            </select>
-            <select id="codPC">
-                <option value="">Código P+C...</option>
-            </select>
-            <input id="fecha" type="date">
-            <input id="horas" type="number" step="0.1" placeholder="Horas">
-            <select id="act">
-                <option value="">Actividad...</option>
-                <option>Gestion de Proyecto</option><option>Revision de Ingenieria</option>
-                <option>Mesas de Trabajo</option><option>Revision Informacion Previa</option>
-                <option>Diseño de Ingenieria</option><option>Atencion de comentarios</option>
-            </select>
-            <textarea id="desc" placeholder="Descripción detallada..." style="grid-column: 1 / -1; height:60px"></textarea>
-            <button onclick="save()" style="grid-column: 1 / -1">💾 Guardar Actividad</button>
-            <div id="lastSaved" style="grid-column: 1 / -1"></div>
-        </div>
-        <!-- PANEL DE FAVORITOS -->
-        <div id="favPanel" class="hidden" style="margin-top:14px;">
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                <span style="font-size:1.1em">⭐</span>
-                <strong style="color:var(--secondary); font-size:0.9em">Mis Favoritos</strong>
-                <span style="font-size:0.75em; color:#888; margin-left:4px">— Carga rápida, solo cambia la fecha</span>
+        <h3>📅 Cargar Registro</h3>
+        <!-- ingSel oculto para compatibilidad con funciones existentes -->
+        <select id="ingSel" class="hidden"></select>
+
+        <!-- SOLO MODO CALENDARIO -->
+        <div id="modoCal">
+            <div style="display:grid;grid-template-columns:minmax(220px,1fr) minmax(260px,1.2fr);gap:20px;align-items:start;">
+
+                <!-- Columna izquierda: opciones -->
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div>
+                        <label style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Proyecto</label>
+                        <select id="calProy" onchange="calActualizarPC()" style="margin:0;">
+                            <option value="">Selecciona proyecto...</option>
+                            <option value="CSE-2256613">CSE-2256613</option>
+                            <option value="CSV-2263319">CSV-2263319</option>
+                            <option value="005-PTR">005-PTR</option>
+                            <option value="G639">G639</option>
+                            <option value="VLTL-01">VLTL-01</option>
+                            <option value="DD-UNRG">DD-UNRG</option>
+                            <option value="DD-COX">DD-COX</option>
+                            <option value="DD-FMO">DD-FMO</option>
+                            <option value="DD-ATL">DD-ATL</option>
+                            <option value="DD-KAI">DD-KAI</option>
+                            <option value="DD-CFM">DD-CFM</option>
+                            <option value="JNK-MLG-01">JNK-MLG-01</option>
+                            <option value="EDF-BSL6">EDF-BSL6</option>
+                            <option value="SDI2">SDI2</option>
+                            <option value="BSL6">BSL6</option>
+                            <option value="ING">ING</option>
+                            <option value="SST-ING">SST-ING</option>
+                            <option value="VCC">🏖 VCC - Vacaciones</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Código P+C</label>
+                        <select id="calPC" style="margin:0;"><option value="">Código P+C...</option></select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Actividad</label>
+                        <select id="calAct" style="margin:0;">
+                            <option value="">Selecciona actividad...</option>
+                            <option>Gestion de Proyecto</option>
+                            <option>Revision de Ingenieria</option>
+                            <option>Mesas de Trabajo</option>
+                            <option>Revision Informacion Previa</option>
+                            <option>Diseño de Ingenieria</option>
+                            <option>Atencion de comentarios</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px;">Horas por día</label>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+                            <span class="qe-chip" onclick="calSetH(1)">1h</span>
+                            <span class="qe-chip" onclick="calSetH(2)">2h</span>
+                            <span class="qe-chip" onclick="calSetH(3)">3h</span>
+                            <span class="qe-chip" onclick="calSetH(4)">4h</span>
+                            <span class="qe-chip" onclick="calSetH(6)">6h</span>
+                            <span class="qe-chip" onclick="calSetH(8)">8h</span>
+                        </div>
+                        <input id="calHoras" type="number" step="0.5" min="0.5" max="12" placeholder="Otra cantidad..." style="margin:0;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px;">Descripción (opcional)</label>
+                        <textarea id="calDesc" placeholder="Descripción de la actividad..." style="margin:0;height:54px;"></textarea>
+                    </div>
+                    <div id="calSelInfo" style="background:rgba(79,172,254,0.08);border:1px solid rgba(79,172,254,0.2);border-radius:12px;padding:12px;font-size:0.82em;color:#aaa;min-height:42px;">
+                        Haz clic en los días del calendario →
+                    </div>
+                    <button onclick="calGuardar()" style="background:linear-gradient(135deg,#00f2fe,#4facfe);color:#000;font-weight:800;">
+                        💾 Guardar registros seleccionados
+                    </button>
+                </div>
+
+                <!-- Columna derecha: mini calendario -->
+                <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <button onclick="calPrevMes()" style="background:rgba(255,255,255,0.06);color:#ccc;border:1px solid rgba(255,255,255,0.1);width:auto;padding:6px 14px;font-size:0.82em;">‹</button>
+                        <span id="calMesLabel" style="font-weight:700;color:var(--secondary);font-size:0.95em;"></span>
+                        <button onclick="calNextMes()" style="background:rgba(255,255,255,0.06);color:#ccc;border:1px solid rgba(255,255,255,0.1);width:auto;padding:6px 14px;font-size:0.82em;">›</button>
+                    </div>
+                    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;user-select:none;"></div>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:0.72em;color:rgba(255,255,255,0.35);">
+                        <span>⬛ Con registro</span>
+                        <span style="color:var(--secondary);">● Seleccionado</span>
+                        <span>○ Fin de semana</span>
+                    </div>
+                </div>
             </div>
-            <div id="favList"></div>
         </div>
+
+    </div><!-- /glass Cargar Registro -->
 
     <div id="pmTools" class="hidden glass">
         <h3>Herramientas de Gestión (PM)</h3>
@@ -535,11 +684,34 @@
             </div>
             <button onclick="exportXLS()" style="background:var(--success); color:#fff; width:auto;">⬇ Excel Reporte</button>
             <button onclick="window.print()" style="background:#666; color:#fff; width:auto;">📸 Captura PDF</button>
+            <!-- NUEVOS BOTONES NÓMINA -->
+            <button onclick="exportNomina()" class="btn-nomina" style="width:auto;">📊 Nómina Excel</button>
+            <button id="btnNominaConfig" onclick="openNominaConfig()" class="btn-cfg-emp pm-only hidden" style="width:auto;">⚙️ Datos Empleados</button>
         </div>
     </div>
 </div>
 
 <div id="toastContainer"></div>
+
+<!-- ══════════════════════════════════════════
+     MODAL CONFIG NÓMINA — NUEVO
+     ══════════════════════════════════════════ -->
+<div id="nominaModal" class="hidden">
+    <div id="nominaModalInner" class="glass">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px;">
+            <h3 style="margin:0;">⚙️ Datos de Nómina por Empleado</h3>
+            <button onclick="closeNominaConfig()" style="background:var(--danger);color:#fff;width:auto;padding:8px 18px;font-size:0.85em;">✕ Cerrar</button>
+        </div>
+        <p style="color:rgba(255,255,255,0.45);font-size:0.82em;margin:0 0 20px;line-height:1.5;">
+            Configure los datos de nómina de cada ingeniero. Se usan al exportar <b style="color:var(--secondary)">Nómina Excel</b> para calcular el valor por proyecto (Costo Empresa ÷ Total Horas × Horas Proyecto). Se sincronizan con Firebase.
+        </p>
+        <div id="nominaEmpList"></div>
+        <p style="font-size:0.75em;color:rgba(255,255,255,0.25);margin-top:16px;text-align:center;">
+            Datos guardados en Firebase · nodo <code>nomina_config</code>
+        </p>
+    </div>
+</div>
+<!-- /MODAL -->
 
 <!-- QUICK ENTRY FLOTANTE -->
 <button id="qeBtn" title="Registro rápido (10 seg)" onclick="toggleQE()">⚡</button>
@@ -570,6 +742,7 @@
             <option value="BSL6">BSL6 - Bosques Solares de Los Llanos 6</option>
             <option value="ING">ING</option>
             <option value="SST-ING">SST-ING</option>
+            <option value="VCC">🏖 VCC - Vacaciones</option>
         </select>
     </div>
     <select id="qeCodPC" style="width:100%; margin-top:6px; font-size:0.82em; padding:9px 10px; border-radius:10px;">
@@ -706,6 +879,7 @@
                 document.querySelectorAll('.pm-only').forEach(el=>el.classList.remove('hidden'));
                 switchTab('ing');
                 updatePMAlert();
+                await pullNominaConfig(); // ← NUEVO
             } else {
                 $('ingSel').innerHTML=`<option>${user.user}</option>`; $('ingSel').disabled=true;
                 const tabIng = $('tab-ing'); if(tabIng) tabIng.style.display='none';
@@ -719,7 +893,9 @@
             render();
             renderFavPanel();
             updateDailyBar();
+            renderHeatmap(); // ← NUEVO
             setupCanvasResize();
+            renderCalGrid(); // ← CALENDARIO
             window.addEventListener('resize', () => { if(user) render(); });
         }
     }
@@ -741,28 +917,35 @@
         else if (principal === "SDI2") opciones = ["SDI2-Gestión", "SDI2-Ingeniería", "SDI2-MesaTrabajo", "SDI2-Previos"];
         else if (principal === "BSL6") opciones = ["BSL6-Gestión", "BSL6-Ingeniería", "BSL6-MesaTrabajo", "BSL6-Previos"];
         else if (principal === "ING") opciones = ["GST-ING", "OFC-ING", "CLD-ING", "OFT-ING", "CAP-ING", "LCC"];
-        else if (principal === "SST-ING") opciones = ["GST-SST","CAP-SST","DOC-SST","AUD-SST","INS-SST"];    
+        else if (principal === "SST-ING") opciones = ["GST-SST","CAP-SST","DOC-SST","AUD-SST","INS-SST"];
+        else if (principal === "VCC") opciones = ["VCC-DIA"];
         else if (principal !== "") opciones = [principal + "-P+C"];
         opciones.forEach(opt => {
             const el = document.createElement("option"); el.value = opt; el.innerText = opt; sub.appendChild(el);
         });
+        if(opciones.length === 1) sub.value = opciones[0];
     }
 
     function save() {
-        const proyectoFinal = `${$('codProy').value} | ${$('codPC').value}`;
+        const codP = $('codProy').value;
+        const codC = $('codPC').value;
+        const proyectoFinal = codP + (codC ? ' | ' + codC : '');
         const r={id:editId||Date.now(),ing:$('ingSel').value,proy:proyectoFinal,fecha:$('fecha').value,horas:Number($('horas').value),act:$('act').value,desc:$('desc').value};
-        if(!r.ing||!r.fecha||!r.horas) return toast("Completa todos los campos requeridos","warning");
+        if(!r.ing||!codP||!r.fecha||!r.horas||!r.act) return toast("Completa todos los campos requeridos: proyecto, fecha, horas y actividad","warning");
         editId ? dbR=dbR.map(x=>x.id===editId?r:x) : dbR.push(r);
         localStorage.setItem("db_registros", JSON.stringify(dbR));
         syncCloud('actividades', r);
         const isEdit = !!editId;
         const savedR = {...r};
-        editId=null; clean(); render(); updateDailyBar();
+        editId=null; clean(); render(); updateDailyBar(); renderHeatmap();
         showLastSaved(savedR);
         toast(isEdit ? "Registro actualizado correctamente" : "Actividad guardada correctamente", "success");
     }
 
-    function clean() { $('codProy').value=""; $('fecha').value=$('horas').value=$('act').value=$('desc').value=""; }
+    function clean() { 
+        $('codProy').value=""; $('codPC').innerHTML='<option value="">Código P+C...</option>';
+        $('fecha').value=fechaOffset(0); $('horas').value=$('act').value=$('desc').value=""; 
+    }
 
     function render() {
         let d = user.rol==='pm' ? [...dbR] : dbR.filter(r=>r.ing===user.user);
@@ -1317,6 +1500,7 @@
         else if(principal === 'BSL6') opts = ['BSL6-Gestión','BSL6-Ingeniería','BSL6-MesaTrabajo','BSL6-Previos'];
         else if(principal === 'ING') opts = ['GST-ING','OFC-ING','CLD-ING','OFT-ING','CAP-ING','LCC'];
         else if (principal === 'SST-ING') opts = ['GST-SST','CAP-SST','DOC-SST','AUD-SST','INS-SST'];
+        else if(principal === 'VCC') opts = ['VCC-DIA'];
         else if(principal) opts = [principal+'-P+C'];
         opts.forEach(o => { const el = document.createElement('option'); el.value=o; el.textContent=o; sub.appendChild(el); });
         if(opts.length === 1) sub.value = opts[0];
@@ -1377,6 +1561,7 @@
         syncCloud('actividades', r);
         render();
         updateDailyBar();
+        renderHeatmap(); // ← NUEVO
         showLastSaved(r);
         toast('⚡ Registrado: ' + proy + ' · ' + h + 'h', 'success');
 
@@ -1711,12 +1896,458 @@
         };
     }
 
+    // ══════════════════════════════════════════════════════════════════
+    //  ADDITIONS — TIMER · HEATMAP · NÓMINA CONFIG · NÓMINA EXPORT
+    // ══════════════════════════════════════════════════════════════════
+
+    // ── MAPEO PROYECTO → CENTRO DE COSTO NÓMINA ──
+    const PROYECTO_CENTROS = {
+        'CSE-2256613': 'CO0079300 ESCOBALES IBAGUE',
+        'CSV-2263319': 'CO0079500 PUERTA DE ORO',
+        '005-PTR':     'CO0076300 VALLEDUPAR',
+        'G639':        'CO0087600 JARDIN',
+        'VLTL-01':     'CO00093300 AMANECER BESS',
+        'JNK-MLG-01':  'RFQ-JNK RFQ DE TRANSFORMADOR',
+        'EDF-BSL6':    'EDF BOSQUES SOLARES 6',
+        'SDI2':        'CC0099000 SOL INIRIDA II',
+        'BSL6':        'CO0098900 BSL 6',
+        'DD-UNRG':     'CO008200 SOLENMIUN // UNERGY',
+        'DD-COX':      'CO0088700 COX ENERGY INGENIERIA',
+        'DD-FMO':      'DEBIDA DILIGENCIA FMO',
+        'DD-ATL':      'DD ATHLETIC',
+        'DD-KAI':      'DD KAI',
+        'DD-CFM':      '932 SUN FACTORY CFM',
+        'ING':         'CO0030002 INGENIERIA',
+        'SST-ING':     'SST-ING'
+    };
+    const MESES_ES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+    function getMesNombre(yyyy_mm) {
+        const m = parseInt((yyyy_mm.split('-')[1]||'1')) - 1;
+        return MESES_ES[m] || yyyy_mm;
+    }
+
+    // ── TIMER / FICHAR ──
+    let _timerRunning = false, _timerStart = 0, _timerIv = null;
+
+    function toggleTimer() {
+        if(!user) return toast('Debes iniciar sesión primero', 'warning');
+        if(!_timerRunning) {
+            _timerStart = Date.now();
+            _timerRunning = true;
+            _timerIv = setInterval(_tickTimer, 500);
+            const btn = $('timerBtn'), disp = $('timerDisplay');
+            if(btn) { btn.innerHTML = '⏹ Fichar Salida'; btn.classList.add('running'); }
+            if(disp) disp.classList.add('running');
+            toast('⏱ Reloj iniciado — estás fichado', 'info');
+        } else {
+            clearInterval(_timerIv); _timerIv = null;
+            const elapsed = Date.now() - _timerStart;
+            const totalH  = elapsed / 3600000;
+            _timerRunning = false;
+            const btn = $('timerBtn'), disp = $('timerDisplay');
+            if(btn)  { btn.innerHTML = '▶ Fichar'; btn.classList.remove('running'); }
+            if(disp) { disp.textContent = '00:00:00'; disp.classList.remove('running'); }
+            const roundedH = Math.round(totalH * 10) / 10;
+            if($('horas')) $('horas').value = roundedH;
+            if($('fecha') && !$('fecha').value) $('fecha').value = fechaOffset(0);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            toast(`⏱ ${roundedH}h cargadas en el formulario · Completa y guarda`, 'success', 4000);
+        }
+    }
+    function _tickTimer() {
+        const disp = $('timerDisplay'); if(!disp) return;
+        const ms = Date.now() - _timerStart;
+        const s  = Math.floor(ms / 1000);
+        const h  = Math.floor(s / 3600);
+        const m  = Math.floor((s % 3600) / 60);
+        const sc = s % 60;
+        disp.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;
+    }
+    window.toggleTimer = toggleTimer;
+
+    // ── HEATMAP 30 DÍAS ──
+    function renderHeatmap() {
+        const grid = $('heatmapGrid'); if(!grid || !user) return;
+        const today = new Date();
+        const todayStr = fechaOffset(0);
+        const HEAT_COLORS = [
+            'rgba(255,255,255,0.05)',
+            'rgba(79,172,254,0.30)',
+            'rgba(0,242,254,0.58)',
+            'rgba(46,204,113,0.90)'
+        ];
+        let html = '';
+        for(let i = 29; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            const ds  = d.toISOString().split('T')[0];
+            const hrs = dbR.filter(r => r.ing === user.user && r.fecha === ds).reduce((s,r) => s + r.horas, 0);
+            const dow = d.getDay();
+            const isWe = (dow === 0 || dow === 6);
+            const lv  = hrs === 0 ? 0 : hrs < 3 ? 1 : hrs < 6 ? 2 : 3;
+            const isToday = ds === todayStr;
+            const dayLabel = d.toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short' });
+            html += `<div class="heat-cell${isWe?' weekend':''}${isToday?' today':''}"
+                style="background:${HEAT_COLORS[lv]};"
+                title="${dayLabel}: ${hrs.toFixed(1)}h${lv===3?' ✓ meta':''}"
+            ></div>`;
+        }
+        grid.innerHTML = html;
+    }
+
+    // ── NÓMINA CONFIG (Firebase: nomina_config/{user}) ──
+    let nominaCfg = {};
+
+    async function pullNominaConfig() {
+        try {
+            const r = await fetch(`${DB_URL}/nomina_config.json`);
+            const d = await r.json();
+            if(d && typeof d === 'object') nominaCfg = d;
+        } catch(e) { console.warn('Sin config nómina'); }
+    }
+
+    async function pushNominaEmp(username, data) {
+        nominaCfg[username] = data;
+        try {
+            await fetch(`${DB_URL}/nomina_config/${username}.json`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...data, sync_ts: new Date().toISOString() })
+            });
+            toast('✓ Datos de ' + username + ' guardados en Firebase', 'success');
+        } catch(e) { toast('Error guardando — sin conexión', 'error'); }
+    }
+
+    function openNominaConfig() {
+        if(user.rol !== 'pm') return toast('Solo el PM puede configurar datos de nómina', 'warning');
+        _renderNominaConfigModal();
+        const m = $('nominaModal'); if(m) m.classList.remove('hidden');
+    }
+    function closeNominaConfig() {
+        const m = $('nominaModal'); if(m) m.classList.add('hidden');
+    }
+    document.addEventListener('click', e => {
+        const modal = $('nominaModal');
+        if(modal && !modal.classList.contains('hidden') && e.target === modal) closeNominaConfig();
+    });
+
+    function _renderNominaConfigModal() {
+        const list = $('nominaEmpList'); if(!list) return;
+        const ings = dbU.filter(u => u.rol === 'ingeniero');
+        if(!ings.length) {
+            list.innerHTML = '<p style="color:#888;text-align:center;padding:30px">No hay ingenieros registrados aún</p>';
+            return;
+        }
+        list.innerHTML = ings.map(u => {
+            const cfg = nominaCfg[u.user] || {};
+            return `<div class="nemp-row">
+                <div class="nemp-name">👤 ${u.user}</div>
+                <div class="nemp-fields">
+                    <div>
+                        <label>Cédula</label>
+                        <input id="nc_ced_${u.user}" placeholder="Ej: 1014232255" value="${cfg.cedula||''}">
+                    </div>
+                    <div>
+                        <label>RID / Código (COE...)</label>
+                        <input id="nc_rid_${u.user}" placeholder="Ej: COE000046" value="${cfg.rid||''}">
+                    </div>
+                    <div class="full">
+                        <label>Nombre completo (como aparece en nómina)</label>
+                        <input id="nc_nom_${u.user}" placeholder="Ej: ESPINOSA BALLEN JAIME ALBERTO" value="${cfg.nombre||''}">
+                    </div>
+                    <div class="full">
+                        <label>Costo total empresa mensual ($COP)</label>
+                        <input id="nc_cos_${u.user}" type="number" placeholder="Ej: 9137187" value="${cfg.costo_mensual||''}">
+                    </div>
+                </div>
+                <button class="nemp-save-btn" onclick="guardarNominaEmp('${u.user}')">💾 Guardar datos de ${u.user}</button>
+            </div>`;
+        }).join('');
+    }
+
+    async function guardarNominaEmp(username) {
+        const cedula = document.getElementById(`nc_ced_${username}`)?.value?.trim() || '';
+        const rid    = document.getElementById(`nc_rid_${username}`)?.value?.trim() || '';
+        const nombre = document.getElementById(`nc_nom_${username}`)?.value?.trim() || username;
+        const costo  = parseFloat(document.getElementById(`nc_cos_${username}`)?.value) || 0;
+        await pushNominaEmp(username, { cedula, rid, nombre, costo_mensual: costo });
+    }
+    window.guardarNominaEmp  = guardarNominaEmp;
+    window.closeNominaConfig = closeNominaConfig;
+    window.openNominaConfig  = openNominaConfig;
+
+    // ── EXPORTAR NÓMINA EXCEL (SheetJS) ──
+    function _loadXLSX() {
+        return new Promise((res, rej) => {
+            if(typeof XLSX !== 'undefined') return res();
+            const s = document.createElement('script');
+            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            s.onload = res; s.onerror = () => rej(new Error('No se pudo cargar SheetJS'));
+            document.head.appendChild(s);
+        });
+    }
+
+    async function exportNomina() {
+        if(!user) return;
+        const esPM = user.rol === 'pm';
+        toast('Preparando Excel de Nómina...', 'info', 2500);
+        try { await _loadXLSX(); }
+        catch(e) { return toast('Error cargando librería Excel · Verifica conexión', 'error'); }
+        const registros = esPM ? [...dbR] : dbR.filter(r => r.ing === user.user);
+        if(!registros.length) return toast('No hay registros para exportar', 'warning');
+        const wb = XLSX.utils.book_new();
+        const porMes = {};
+        registros.forEach(r => {
+            if(!r.fecha) return;
+            const mes = r.fecha.substring(0, 7);
+            if(!porMes[mes]) porMes[mes] = [];
+            porMes[mes].push(r);
+        });
+        const ingenieros = esPM
+            ? dbU.filter(u => u.rol === 'ingeniero')
+            : [{ user: user.user, rol: 'ingeniero' }];
+
+        Object.keys(porMes).sort().forEach(mesKey => {
+            const regs      = porMes[mesKey];
+            const mesNombre = getMesNombre(mesKey);
+            const proySet   = new Set();
+            regs.forEach(r => proySet.add(r.proy.split(' | ')[0].trim()));
+            const proyectos = [...proySet].sort();
+
+            const fila1 = ['PERSONAL', '', '', '', 'TOTAL'];
+            proyectos.forEach(p => { fila1.push(PROYECTO_CENTROS[p] || p); fila1.push(''); });
+            fila1.push('', '');
+
+            const fila2 = ['MESES', 'EMPLEADO', 'RID', 'NOMBRE EMPLEADO', 'TOTAL COSTO EMPRESA'];
+            proyectos.forEach(() => { fila2.push('# Horas'); fila2.push('Valor'); });
+            fila2.push('TOTAL HORAS', 'TOTAL');
+
+            const rows = [fila1, fila2];
+            const totAcum = new Array(fila2.length).fill(0);
+
+            ingenieros.forEach(u => {
+                const regsIng = regs.filter(r => r.ing === u.user);
+                if(!regsIng.length) return;
+                const cfg        = nominaCfg[u.user] || {};
+                const totalHoras = regsIng.reduce((s, r) => s + r.horas, 0);
+                const costoEmp   = cfg.costo_mensual || 0;
+                const tarifa     = (totalHoras > 0 && costoEmp > 0) ? costoEmp / totalHoras : 0;
+                const fila = [mesNombre, cfg.cedula || u.user, cfg.rid || '', cfg.nombre || u.user, costoEmp || ''];
+                proyectos.forEach((p, i) => {
+                    const hP = regsIng.filter(r => r.proy.split(' | ')[0].trim() === p).reduce((s,r) => s + r.horas, 0);
+                    const vP = tarifa > 0 ? hP * tarifa : 0;
+                    fila.push(hP || 0, vP ? Math.round(vP * 100) / 100 : 0);
+                    totAcum[5 + i * 2]     = (totAcum[5 + i * 2] || 0) + hP;
+                    totAcum[5 + i * 2 + 1] = (totAcum[5 + i * 2 + 1] || 0) + (vP || 0);
+                });
+                fila.push(totalHoras, costoEmp || 0);
+                totAcum[totAcum.length - 2] = (totAcum[totAcum.length - 2] || 0) + totalHoras;
+                totAcum[totAcum.length - 1] = (totAcum[totAcum.length - 1] || 0) + (costoEmp || 0);
+                rows.push(fila);
+            });
+
+            const filaTot = ['', '', '', '', ''];
+            proyectos.forEach((_, i) => {
+                filaTot.push(Math.round(totAcum[5 + i * 2] * 10) / 10, Math.round(totAcum[5 + i * 2 + 1]));
+            });
+            filaTot.push(Math.round(totAcum[totAcum.length - 2] * 10) / 10, Math.round(totAcum[totAcum.length - 1]));
+            rows.push(filaTot);
+
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            const cols = [{ wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 34 }, { wch: 18 }];
+            proyectos.forEach(() => { cols.push({ wch: 10 }); cols.push({ wch: 18 }); });
+            cols.push({ wch: 13 }, { wch: 16 });
+            ws['!cols'] = cols;
+            const merges = [];
+            proyectos.forEach((_, i) => { merges.push({ s: { r:0, c: 5 + i*2 }, e: { r:0, c: 5 + i*2 + 1 } }); });
+            if(merges.length) ws['!merges'] = merges;
+            ws['!rows'] = [{ hpt: 20 }, { hpt: 18 }];
+            XLSX.utils.book_append_sheet(wb, ws, mesNombre.substring(0, 31));
+        });
+
+        if(esPM && Object.keys(porMes).length > 1) {
+            const resumen = [['MES', 'TOTAL HORAS', 'TOTAL COSTO EMPRESA', 'INGENIEROS ACTIVOS', 'PROYECTOS ACTIVOS']];
+            Object.keys(porMes).sort().forEach(mesKey => {
+                const regs = porMes[mesKey];
+                const totalH = regs.reduce((s, r) => s + r.horas, 0);
+                const totalC = ingenieros.reduce((s, u) => {
+                    const cfg = nominaCfg[u.user] || {};
+                    return regs.some(r => r.ing === u.user) ? s + (cfg.costo_mensual || 0) : s;
+                }, 0);
+                resumen.push([getMesNombre(mesKey), Math.round(totalH*10)/10, totalC,
+                    new Set(regs.map(r => r.ing)).size, new Set(regs.map(r => r.proy.split(' | ')[0].trim())).size]);
+            });
+            const wsRes = XLSX.utils.aoa_to_sheet(resumen);
+            wsRes['!cols'] = [{ wch:14 }, { wch:14 }, { wch:22 }, { wch:18 }, { wch:18 }];
+            XLSX.utils.book_append_sheet(wb, wsRes, 'RESUMEN ANUAL');
+        }
+
+        const anio = new Date().getFullYear();
+        const filename = esPM ? `Nomina_Ingenieria_${anio}.xlsx` : `Nomina_${user.user}_${anio}.xlsx`;
+        XLSX.writeFile(wb, filename);
+        toast(`✅ Nómina exportada: ${filename} · ${Object.keys(porMes).length} mes(es)`, 'success', 5000);
+    }
+    window.exportNomina = exportNomina;
+
+    // ── FIN ADDITIONS ──
+
+    // ── MODO REGISTRO CALENDARIO ─────────────────────────
+    let calYear  = new Date().getFullYear();
+    let calMonth = new Date().getMonth(); // 0-indexed
+    let calSelected = new Set(); // Set of 'YYYY-MM-DD' strings
+
+    const CAL_MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const CAL_DIAS  = ['Do','Lu','Ma','Mi','Ju','Vi','Sá'];
+
+    // switchModoReg eliminado — solo existe vista calendario
+
+    function calActualizarPC() {
+        const principal = $('calProy').value;
+        const sub = $('calPC');
+        sub.innerHTML = '<option value="">Código P+C...</option>';
+        let opts = [];
+        if(principal === 'JNK-MLG-01') opts = ['JNK-MLG-01-Gestión','JNK-MLG-01-Ingeniería','JNK-MLG-01-MesaTrabajo','JNK-MLG-01-Previos'];
+        else if(principal === 'EDF-BSL6') opts = ['EDF-BSL6-Gestión','EDF-BSL6-Ingeniería','EDF-BSL6-MesaTrabajo','EDF-BSL6-Previos'];
+        else if(principal === 'SDI2') opts = ['SDI2-Gestión','SDI2-Ingeniería','SDI2-MesaTrabajo','SDI2-Previos'];
+        else if(principal === 'BSL6') opts = ['BSL6-Gestión','BSL6-Ingeniería','BSL6-MesaTrabajo','BSL6-Previos'];
+        else if(principal === 'ING') opts = ['GST-ING','OFC-ING','CLD-ING','OFT-ING','CAP-ING','LCC'];
+        else if(principal === 'SST-ING') opts = ['GST-SST','CAP-SST','DOC-SST','AUD-SST','INS-SST'];
+        else if(principal === 'VCC') opts = ['VCC-DIA'];
+        else if(principal) opts = [principal+'-P+C'];
+        opts.forEach(o => { const el=document.createElement('option'); el.value=o; el.textContent=o; sub.appendChild(el); });
+        if(opts.length === 1) sub.value = opts[0];
+    }
+
+    function calSetH(h) {
+        if($('calHoras')) $('calHoras').value = h;
+        document.querySelectorAll('#modoCal .qe-chip').forEach(c => {
+            c.classList.toggle('active', parseFloat(c.textContent) === h);
+        });
+    }
+
+    function renderCalGrid() {
+        const grid = $('calGrid'); if(!grid) return;
+        const label = $('calMesLabel');
+        if(label) label.textContent = CAL_MESES[calMonth] + ' ' + calYear;
+
+        // Días con registros del usuario en este mes
+        const ingUser = user ? user.user : '';
+        const mesStr  = calYear + '-' + String(calMonth+1).padStart(2,'0');
+        const diasConReg = new Set(
+            dbR.filter(r => r.ing === ingUser && r.fecha.startsWith(mesStr)).map(r => r.fecha)
+        );
+
+        const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Dom
+        const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+        const today = fechaOffset(0);
+
+        let html = CAL_DIAS.map(d => `<div style="font-size:0.68em;color:rgba(255,255,255,0.3);padding:4px 0;font-weight:600;">${d}</div>`).join('');
+
+        // Empty cells before first day
+        for(let i=0; i<firstDay; i++) html += '<div></div>';
+
+        for(let d=1; d<=daysInMonth; d++) {
+            const dateStr = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+            const dow = new Date(calYear, calMonth, d).getDay();
+            const isWeekend = dow === 0 || dow === 6;
+            const isSel    = calSelected.has(dateStr);
+            const hasReg   = diasConReg.has(dateStr);
+            const isToday  = dateStr === today;
+
+            let bg, color, border;
+            if(isSel)        { bg='rgba(0,242,254,0.22)'; color='#00f2fe'; border='2px solid #00f2fe'; }
+            else if(hasReg)  { bg='rgba(255,255,255,0.08)'; color='rgba(255,255,255,0.4)'; border='1px solid rgba(255,255,255,0.15)'; }
+            else if(isWeekend){ bg='rgba(255,255,255,0.02)'; color='rgba(255,255,255,0.2)'; border='1px solid transparent'; }
+            else              { bg='rgba(79,172,254,0.06)'; color='rgba(255,255,255,0.7)'; border='1px solid rgba(79,172,254,0.15)'; }
+
+            const todayRing = isToday ? 'outline:2px solid rgba(0,242,254,0.7);outline-offset:1px;' : '';
+            const dot = hasReg && !isSel ? '<span style="display:block;width:4px;height:4px;border-radius:50%;background:rgba(79,172,254,0.6);margin:1px auto 0;"></span>' : '';
+
+            html += `<div onclick="calToggleDay('${dateStr}')" 
+                style="cursor:pointer;border-radius:8px;padding:6px 2px;background:${bg};color:${color};border:${border};${todayRing}transition:0.15s;font-size:0.82em;font-weight:${isSel?'700':'400'};"
+                title="${dateStr}">
+                ${d}${dot}
+            </div>`;
+        }
+
+        grid.innerHTML = html;
+        calUpdateInfo();
+
+        // Listener para actualizar info cuando cambia las horas
+        const horasEl = $('calHoras');
+        if(horasEl && !horasEl._calBound) {
+            horasEl.addEventListener('input', calUpdateInfo);
+            horasEl._calBound = true;
+        }
+    }
+
+    window.calToggleDay = function(dateStr) {
+        if(calSelected.has(dateStr)) calSelected.delete(dateStr);
+        else calSelected.add(dateStr);
+        renderCalGrid();
+    };
+
+    function calUpdateInfo() {
+        const info = $('calSelInfo'); if(!info) return;
+        const n = calSelected.size;
+        if(n === 0) { info.innerHTML = 'Haz clic en los días del calendario →'; return; }
+        const h = parseFloat($('calHoras')?.value) || 0;
+        const dias = [...calSelected].sort();
+        info.innerHTML = `<strong style="color:var(--secondary)">${n} día${n>1?'s':''} seleccionado${n>1?'s':''}</strong> · ${h?h+'h c/u · <strong>'+(n*h).toFixed(1)+'h total</strong>':''}<br>
+            <span style="color:rgba(255,255,255,0.35);font-size:0.9em">${dias.slice(0,4).join(', ')}${dias.length>4?' …':''}</span>`;
+    }
+
+    // calHoras listener se agrega en init para asegurar que el DOM existe
+
+    window.calPrevMes = function() {
+        calMonth--; if(calMonth<0){ calMonth=11; calYear--; }
+        calSelected.clear(); renderCalGrid();
+    };
+    window.calNextMes = function() {
+        calMonth++; if(calMonth>11){ calMonth=0; calYear++; }
+        calSelected.clear(); renderCalGrid();
+    };
+
+    async function calGuardar() {
+        const proy = $('calProy').value;
+        const pc   = $('calPC').value;
+        const act  = $('calAct').value;
+        const h    = parseFloat($('calHoras').value);
+        const desc = $('calDesc')?.value || '';
+        const ing  = user?.user;
+
+        if(!proy)               return toast('Selecciona un proyecto','warning');
+        if(!act)                return toast('Selecciona una actividad','warning');
+        if(!h || h <= 0)        return toast('Ingresa las horas','warning');
+        if(calSelected.size===0) return toast('Selecciona al menos un día en el calendario','warning');
+
+        const proyFinal = proy + (pc ? ' | ' + pc : '');
+        const registros = [];
+
+        calSelected.forEach(fecha => {
+            const r = { id: Date.now() + Math.random(), ing, proy: proyFinal, fecha, horas: h, act, desc };
+            dbR.push(r);
+            registros.push(r);
+        });
+
+        localStorage.setItem('db_registros', JSON.stringify(dbR));
+
+        const uploads = registros.map(r => syncCloud('actividades', r));
+        await Promise.all(uploads);
+
+        render(); updateDailyBar(); renderHeatmap();
+        toast(`✅ ${registros.length} registro${registros.length>1?'s':''} guardado${registros.length>1?'s':''} · ${proyFinal} · ${h}h c/u`, 'success', 4000);
+
+        calSelected.clear();
+        $('calHoras').value = '';
+        document.querySelectorAll('#modoCal .qe-chip').forEach(c=>c.classList.remove('active'));
+        renderCalGrid();
+    }
+    window.calGuardar = calGuardar;
+
+    // ── FIN CALENDARIO ───────────────────────────────────
+
     init();
 </script>
 </body>
 </html>
-
-
-
-
-
