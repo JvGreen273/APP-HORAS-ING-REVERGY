@@ -92,30 +92,54 @@
     .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
     .chart-box { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; text-align: center; }
 
-    /* --- CAPA ESTÉTICA CANVA ADICIONAL --- */
-    .canvas-wrapper { position: relative; width: 100%; overflow: hidden; }
-    .canvas-wrapper canvas {
-        width: 100% !important;
-        height: auto !important;
-        max-height: 420px;
-        display: block;
+    /* --- GRÁFICOS SVG ESTÁTICOS --- */
+    .canvas-wrapper {
+        position: relative; width: 100%;
+        display: flex; flex-direction: column;
+        overflow: hidden;
     }
+    .canvas-wrapper canvas { display: none !important; }
+    .svg-chart-container {
+        width: 100%; display: block; flex-shrink: 0;
+        padding: 16px 20px 0;
+        box-sizing: border-box;
+    }
+    .svg-chart-container svg {
+        width: 100%; height: auto; display: block;
+        overflow: visible;
+    }
+    /* ── BADGES / LEYENDA DE GRÁFICOS — fila superior contenida ── */
     .canva-overlay {
-        position: absolute; top: 10px; right: 10px;
-        display: flex; flex-direction: column; gap: 5px;
-        pointer-events: none; z-index: 10; align-items: flex-end;
+        display: flex; flex-direction: row; flex-wrap: wrap;
+        gap: 5px 8px; padding: 12px 22px 6px;
+        align-items: center;
+        pointer-events: none;
+        order: -1; /* siempre antes del SVG en flex-col */
+    }
+    .canva-overlay-label {
+        font-size: 0.65em; text-transform: uppercase; letter-spacing: .1em;
+        color: rgba(255,255,255,0.22); font-weight: 700;
+        white-space: nowrap; margin-right: 4px; flex-shrink: 0;
+        align-self: center;
     }
     .canva-badge {
-        background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 4px 10px; border-radius: 10px;
-        display: flex; justify-content: space-between; align-items: center; gap: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        animation: slideIn 0.5s ease-out;
+        background: rgba(255,255,255,0.055); backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.09);
+        padding: 3px 9px; border-radius: 20px;
+        display: flex; align-items: center; gap: 6px;
+        animation: slideIn 0.35s ease-out;
+        min-width: 0;
     }
-    .canva-name { font-size: 0.75em; font-weight: 600; color: #fff; white-space: nowrap; }
-    .canva-pct { background: var(--primary); color: #000; padding: 1px 5px; border-radius: 5px; font-size: 0.7em; font-weight: bold; }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    .canva-name {
+        font-size: 0.7em; font-weight: 600; color: rgba(255,255,255,0.65);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;
+    }
+    .canva-pct {
+        background: var(--primary); color: #000;
+        padding: 1px 5px; border-radius: 10px;
+        font-size: 0.65em; font-weight: 800; flex-shrink: 0;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* --- FAVORITOS --- */
     .btn-fav {
@@ -642,30 +666,30 @@
         </div>
         <!-- Panel ING (solo PM) -->
         <div class="tab-panel" id="panel-ing">
-            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
-                <canvas id="cIng" width="1400" height="480"></canvas>
+            <div class="canvas-wrapper">
                 <div id="ovIng" class="canva-overlay"></div>
+                <canvas id="cIng" width="1400" height="480"></canvas>
             </div>
         </div>
         <!-- Panel PROY -->
         <div class="tab-panel hidden" id="panel-proy">
-            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
-                <canvas id="cProy" width="1400" height="480"></canvas>
+            <div class="canvas-wrapper">
                 <div id="ovProy" class="canva-overlay"></div>
+                <canvas id="cProy" width="1400" height="480"></canvas>
             </div>
         </div>
         <!-- Panel ACT -->
         <div class="tab-panel hidden" id="panel-act">
-            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
-                <canvas id="cAct" width="1400" height="480"></canvas>
+            <div class="canvas-wrapper">
                 <div id="ovAct" class="canva-overlay"></div>
+                <canvas id="cAct" width="1400" height="480"></canvas>
             </div>
         </div>
         <!-- Panel LINE -->
         <div class="tab-panel hidden" id="panel-line">
-            <div class="canvas-wrapper" style="padding:16px 20px 12px;">
+            <div class="canvas-wrapper">
+                <div id="ovS" class="canva-overlay"></div>
                 <canvas id="cLine" width="1400" height="480"></canvas>
-                <div id="ovS" class="canva-overlay" style="top:auto; bottom:40px;"></div>
             </div>
         </div>
         <!-- Panel PM DASHBOARD (solo PM) -->
@@ -898,7 +922,6 @@
             renderHeatmap(); // ← NUEVO
             setupCanvasResize();
             renderCalGrid(); // ← CALENDARIO
-            window.addEventListener('resize', () => { if(user) render(); });
         }
     }
 
@@ -1058,128 +1081,166 @@
         }
     };
 
+    // ── SVG CHART ENGINE — estático, inmune a reflow ──────────────────────
     function draw(id, data, color, esL = false) {
-        const c=$(id); if(!c) return;
-        const dpr = window.devicePixelRatio || 1;
+        const c = $(id); if(!c) return;
         const wrapper = c.parentElement;
-        const cssW = wrapper.clientWidth - 40;
-        if(cssW < 80) return;
-        const cssH = Math.round(cssW * 0.33);
-        c.width  = Math.round(cssW * dpr);
-        c.height = Math.round(cssH * dpr);
-        c.style.width  = cssW + 'px';
-        c.style.height = cssH + 'px';
-        const ctx = c.getContext('2d');
-        ctx.scale(dpr, dpr);
-        const W = cssW, H = cssH;
-        ctx.clearRect(0,0,W,H);
-        const ks=Object.keys(data), vs=Object.values(data); if(!ks.length) return;
-        const max=Math.max(...vs, esL?META:1);
-        const PL=52, PR=20, PT=28, PB=46;
-        const gW=W-PL-PR, gH=H-PT-PB;
 
-        // Fondo suave del área del gráfico
-        ctx.fillStyle='rgba(0,0,0,0.18)';
-        ctx.beginPath(); ctx.roundRect(PL,PT,gW,gH,4); ctx.fill();
+        let svgBox = wrapper.querySelector('.svg-chart-container');
+        if(!svgBox) {
+            svgBox = document.createElement('div');
+            svgBox.className = 'svg-chart-container';
+            wrapper.appendChild(svgBox);
+        }
 
-        // Cuadrícula y eje Y
-        const gridLevels = [0,0.25,0.5,0.75,1];
-        gridLevels.forEach(t=>{
-            const yg=PT+gH*(1-t), val=(max*t).toFixed(1);
-            if(t>0) {
-                ctx.strokeStyle=t===0.5?'rgba(255,255,255,0.07)':'rgba(255,255,255,0.04)';
-                ctx.lineWidth=t===0.5?1.5:1; ctx.setLineDash([4,5]);
-                ctx.beginPath(); ctx.moveTo(PL,yg); ctx.lineTo(PL+gW,yg); ctx.stroke();
-                ctx.setLineDash([]);
+        // Ordenar por valor desc para barras (mejor lectura)
+        let entries = Object.entries(data);
+        if (!esL) entries = entries.sort((a, b) => b[1] - a[1]);
+        const ks = entries.map(e => e[0]);
+        const vs = entries.map(e => e[1]);
+
+        if(!ks.length) { svgBox.innerHTML = ''; return; }
+
+        const W = 900, H = 300;
+        const PL = 58, PR = 22, PT = 30, PB = 50;
+        const gW = W - PL - PR, gH = H - PT - PB;
+        const max = Math.max(...vs, esL ? META : 1);
+        const uid = id + '_svg';
+
+        // Límite de labels visibles en eje X — 12 para ingenieros/actividades, 15 para proyectos (más items)
+        const MAX_LABELS = id === 'cProy' ? 15 : 12;
+        // Para líneas: mostrar cada N puntos
+        const labelStep = esL ? Math.max(1, Math.ceil(ks.length / 12)) : null;
+
+        let defs = `<defs>
+            <linearGradient id="${uid}_fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${color}" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="${color}" stop-opacity="0.01"/>
+            </linearGradient>
+            <filter id="${uid}_glow">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <linearGradient id="${uid}_ax" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="${color}" stop-opacity="0.55"/>
+                <stop offset="100%" stop-color="${color}" stop-opacity="0.08"/>
+            </linearGradient>
+            <clipPath id="${uid}_clip">
+                <rect x="${PL}" y="${PT}" width="${gW}" height="${gH}"/>
+            </clipPath>
+        </defs>`;
+
+        // Fondo del área
+        let body = `<rect x="${PL}" y="${PT}" width="${gW}" height="${gH}" rx="5"
+            fill="rgba(0,0,0,0.18)" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>`;
+
+        // Grid + eje Y labels
+        [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+            const yg = PT + gH * (1 - t);
+            const val = (max * t).toFixed(1);
+            if (t > 0) {
+                body += `<line x1="${PL}" y1="${yg}" x2="${PL+gW}" y2="${yg}"
+                    stroke="rgba(255,255,255,${t===0.5?'0.09':'0.05'})"
+                    stroke-width="${t===0.5?1.5:1}" stroke-dasharray="${t===0.5?'6,5':'3,6'}"/>`;
             }
-            ctx.fillStyle='rgba(255,255,255,0.28)';
-            ctx.font=`${11}px "Segoe UI",system-ui,Arial`; ctx.textAlign='right';
-            ctx.fillText(val+'h', PL-8, yg+4);
+            body += `<text x="${PL-8}" y="${yg+4}" text-anchor="end" font-size="10"
+                fill="rgba(255,255,255,0.28)" font-family="'Courier New',monospace">${val}h</text>`;
         });
-        ctx.setLineDash([]);
 
-        if(esL){
-            const step=(ks.length>1?gW/(ks.length-1):gW);
-            // Línea meta
-            const ym=PT+gH-(META/max*gH);
-            ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(255,80,60,0.45)'; ctx.lineWidth=1.5;
-            ctx.beginPath(); ctx.moveTo(PL,ym); ctx.lineTo(PL+gW,ym); ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.fillStyle='rgba(255,100,80,0.6)';
-            ctx.font=`10px "Segoe UI",Arial`; ctx.textAlign='left';
-            ctx.fillText('Meta '+META+'h', PL+6, ym-5);
+        // Eje Y
+        body += `<line x1="${PL}" y1="${PT}" x2="${PL}" y2="${PT+gH}"
+            stroke="url(#${uid}_ax)" stroke-width="1.5"/>`;
 
-            // Relleno bajo curva con gradiente
-            const gr=ctx.createLinearGradient(0,PT,0,PT+gH);
-            gr.addColorStop(0,'rgba(79,172,254,0.25)'); gr.addColorStop(1,'rgba(79,172,254,0.01)');
-            ctx.beginPath();
-            ks.forEach((k,i)=>{ const x=PL+i*step,y=PT+gH-(vs[i]/max*gH); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
-            ctx.lineTo(PL+(ks.length-1)*step,PT+gH); ctx.lineTo(PL,PT+gH); ctx.closePath();
-            ctx.fillStyle=gr; ctx.fill();
+        if (esL) {
+            // ─── CURVA DE TENDENCIA ───
+            const step = ks.length > 1 ? gW / (ks.length - 1) : gW;
+            const ym = PT + gH - (META / max * gH);
+            body += `<line x1="${PL}" y1="${ym}" x2="${PL+gW}" y2="${ym}"
+                stroke="rgba(255,80,60,0.4)" stroke-width="1.5" stroke-dasharray="6,5"/>
+                <text x="${PL+8}" y="${ym-6}" font-size="9" fill="rgba(255,100,80,0.6)"
+                font-family="'Courier New',monospace">META ${META}h</text>`;
 
-            // Línea principal
-            ctx.beginPath(); ctx.lineWidth=2.5; ctx.strokeStyle=color; ctx.lineJoin='round'; ctx.lineCap='round';
-            ks.forEach((k,i)=>{ const x=PL+i*step,y=PT+gH-(vs[i]/max*gH); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
-            ctx.stroke();
+            let polyFill = `M ${PL} ${PT+gH}`;
+            ks.forEach((k, i) => { polyFill += ` L ${PL+i*step} ${PT+gH-(vs[i]/max*gH)}`; });
+            polyFill += ` L ${PL+(ks.length-1)*step} ${PT+gH} Z`;
+            body += `<path d="${polyFill}" fill="url(#${uid}_fill)" clip-path="url(#${uid}_clip)"/>`;
 
-            // Puntos y etiquetas
-            const cada=Math.max(1,Math.ceil(ks.length/8));
-            ks.forEach((k,i)=>{
-                const x=PL+i*step, y=PT+gH-(vs[i]/max*gH), ok=vs[i]>=META;
-                // Halo
-                ctx.beginPath(); ctx.arc(x,y,7,0,Math.PI*2);
-                ctx.fillStyle=ok?'rgba(46,204,113,0.15)':'rgba(255,75,43,0.15)'; ctx.fill();
-                // Punto relleno
-                ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
-                ctx.fillStyle=ok?'#2ecc71':'#ff4b2b'; ctx.fill();
-                ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
-                ctx.strokeStyle='rgba(0,0,0,0.4)'; ctx.lineWidth=1; ctx.stroke();
+            let polyLine = ks.map((k, i) => `${i===0?'M':'L'} ${PL+i*step} ${PT+gH-(vs[i]/max*gH)}`).join(' ');
+            body += `<path d="${polyLine}" fill="none" stroke="${color}" stroke-width="1.5"
+                stroke-linejoin="round" stroke-linecap="round" opacity="0.3"/>
+                <path d="${polyLine}" fill="none" stroke="${color}" stroke-width="2.5"
+                stroke-linejoin="round" stroke-linecap="round" filter="url(#${uid}_glow)"/>`;
 
-                if(ks.length<=30){ ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font=`10px "Segoe UI",Arial`; ctx.textAlign='center'; ctx.fillText(vs[i].toFixed(1)+'h',x,y-11); }
-                if(i%cada===0||i===ks.length-1){
-                    ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font=`10px "Segoe UI",Arial`; ctx.textAlign='center';
-                    ctx.fillText(k.length>=10?k.slice(5):k, x, PT+gH+PB-8);
+            ks.forEach((k, i) => {
+                const x = PL + i * step, y = PT + gH - (vs[i] / max * gH);
+                const ok = vs[i] >= META;
+                const pc = ok ? '#2ecc71' : '#ff4b2b';
+                body += `<circle cx="${x}" cy="${y}" r="7" fill="${pc}" opacity="0.1"/>`;
+                // tooltip nativo
+                body += `<circle cx="${x}" cy="${y}" r="3.5" fill="${pc}" stroke="rgba(0,0,0,0.5)" stroke-width="1">
+                    <title>${k}: ${vs[i].toFixed(1)}h</title></circle>`;
+                if (ks.length <= 25) {
+                    body += `<text x="${x}" y="${y-11}" text-anchor="middle" font-size="9"
+                        fill="rgba(255,255,255,0.7)" font-family="'Courier New',monospace">${vs[i].toFixed(1)}h</text>`;
+                }
+                // Solo mostrar label eje X cada N pasos
+                if (i % labelStep === 0 || i === ks.length - 1) {
+                    const lbl = k.length >= 10 ? k.slice(5) : k;
+                    body += `<text x="${x}" y="${PT+gH+PB-10}" text-anchor="middle" font-size="9"
+                        fill="rgba(255,255,255,0.3)" font-family="'Segoe UI',system-ui,Arial">${lbl}</text>`;
                 }
             });
 
         } else {
-            const slotW=gW/ks.length, barW=Math.min(Math.max(slotW*0.55,12),64), r=6;
-            // Paleta multicolor para barras
+            // ─── BARRAS VERTICALES ─── (ya ordenadas por valor desc)
             const palette = ['#4facfe','#00f2fe','#7f5af0','#ffa502','#2ecc71','#ff4b2b','#e040fb','#26c6da'];
-            ks.forEach((k,i)=>{
-                const bh=Math.max(vs[i]/max*gH,2), x=PL+i*slotW+(slotW-barW)/2, y=PT+gH-bh;
-                const bColor = color === '#ffa502' ? palette[(i*2)%palette.length] : color;
-                // Sombra suave bajo barra
-                ctx.beginPath(); ctx.roundRect(x+2,y+4,barW,bh,r);
-                ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fill();
-                // Barra principal
-                ctx.beginPath(); ctx.roundRect(x,y,barW,bh,r);
-                ctx.fillStyle=bColor; ctx.fill();
-                // Brillo top
-                const sh=ctx.createLinearGradient(x,y,x+barW,y);
-                sh.addColorStop(0,'rgba(255,255,255,0.18)'); sh.addColorStop(0.5,'rgba(255,255,255,0.06)'); sh.addColorStop(1,'rgba(255,255,255,0)');
-                ctx.fillStyle=sh; ctx.fill();
-                // Valor
-                ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font=`bold 11px "Segoe UI",Arial`; ctx.textAlign='center';
-                if(bh > 18) ctx.fillText(vs[i].toFixed(1)+'h', x+barW/2, y-7);
-                // Label eje X
-                const lbl=k.length>13?k.substring(0,12)+'…':k;
-                ctx.fillStyle='rgba(255,255,255,0.38)'; ctx.font=`10px "Segoe UI",Arial`;
-                // Rotar label si hay muchos
-                if(ks.length > 8) {
-                    ctx.save(); ctx.translate(x+barW/2, PT+gH+10);
-                    ctx.rotate(-Math.PI/5); ctx.textAlign='right';
-                    ctx.fillText(lbl, 0, 0); ctx.restore();
-                } else {
-                    ctx.fillText(lbl, x+barW/2, PT+gH+PB-8);
+            const slotW = gW / ks.length;
+            const barW  = Math.min(Math.max(slotW * 0.6, 8), 58);
+
+            ks.forEach((k, i) => {
+                const bh = Math.max(vs[i] / max * gH, 2);
+                const x  = PL + i * slotW + (slotW - barW) / 2;
+                const y  = PT + gH - bh;
+                const bc = color === '#ffa502' ? palette[(i * 2) % palette.length] : color;
+                const bg_id = `${uid}_bg${i}`;
+
+                defs += `<linearGradient id="${bg_id}" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="${bc}" stop-opacity="0.95"/>
+                    <stop offset="100%" stop-color="${bc}" stop-opacity="0.45"/>
+                </linearGradient>`;
+
+                // Grupo con tooltip nativo SVG
+                body += `<g>
+                    <title>${k}: ${vs[i].toFixed(1)}h</title>
+                    <rect x="${x+2}" y="${y+4}" width="${barW}" height="${bh}" rx="5" fill="rgba(0,0,0,0.25)"/>
+                    <rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="5" fill="url(#${bg_id})"/>
+                    <rect x="${x+2}" y="${y+2}" width="${barW*0.42}" height="${Math.min(bh*0.42,16)}" rx="3" fill="rgba(255,255,255,0.12)"/>`;
+
+                // Valor: solo si la barra tiene suficiente altura
+                if (bh > 18) {
+                    body += `<text x="${x+barW/2}" y="${y-7}" text-anchor="middle" font-size="10"
+                        fill="rgba(255,255,255,0.85)" font-weight="700"
+                        font-family="'Courier New',monospace">${vs[i].toFixed(1)}h</text>`;
                 }
+
+                // Label eje X — SOLO top MAX_LABELS (los primeros tras ordenar por valor)
+                if (i < MAX_LABELS) {
+                    // Truncar código de proyecto inteligentemente
+                    const raw = k.split(' | ')[0]; // quitar sub-código P+C
+                    const lbl = raw.length > 11 ? raw.substring(0, 10) + '…' : raw;
+                    body += `<text transform="translate(${x+barW/2},${PT+gH+14}) rotate(-35)"
+                        text-anchor="end" font-size="9" fill="rgba(255,255,255,0.4)"
+                        font-family="'Segoe UI',system-ui,Arial">${lbl}</text>`;
+                }
+
+                body += `</g>`;
             });
         }
-        // Eje Y
-        const axGrad = ctx.createLinearGradient(PL,PT,PL,PT+gH);
-        axGrad.addColorStop(0,'rgba(79,172,254,0.4)'); axGrad.addColorStop(1,'rgba(79,172,254,0.08)');
-        ctx.strokeStyle=axGrad; ctx.lineWidth=1.5; ctx.setLineDash([]);
-        ctx.beginPath(); ctx.moveTo(PL,PT); ctx.lineTo(PL,PT+gH); ctx.stroke();
+
+        svgBox.innerHTML = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
+            style="width:100%;height:auto;display:block;overflow:visible;">
+            ${defs}${body}
+        </svg>`;
     }
 
     function renderC(d) {
@@ -1211,21 +1272,8 @@
             renderPMDashboard(d);
             return;
         }
-        // Redibujar canvas activo con tamaño real del contenedor
-        const ids = { ing:'cIng', proy:'cProy', act:'cAct', line:'cLine' };
-        const cv = $(ids[tab]);
-        if(cv) {
-            const wrapper = cv.parentElement;
-            const realW = wrapper.clientWidth - 40;
-            if(realW > 100) {
-                const dpr = window.devicePixelRatio || 1;
-                cv.width  = Math.round(realW * dpr);
-                cv.height = Math.round(realW * 0.30 * dpr);
-                cv.style.width  = realW + 'px';
-                cv.style.height = Math.round(realW * 0.30) + 'px';
-            }
-            setTimeout(() => render(), 10);
-        }
+        // SVG usa viewBox — no necesita resize manual al cambiar de tab
+        if(tab !== 'pm') setTimeout(() => render(), 10);
     };
 
     // --- EXPORTACIÓN Y BACKUP ---
@@ -1335,17 +1383,25 @@
         const totalH = d.reduce((sum, r) => sum + r.horas, 0);
         if(totalH === 0) return;
 
-        // Inyectar nombres en cada overlay
-        const overlays = { ovIng: s.ing, ovProy: s.proy, ovAct: s.act };
-        Object.entries(overlays).forEach(([id, data]) => {
-            if($(id)) {
-                $(id).innerHTML = Object.entries(data).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([nom, val]) => `
-                    <div class="canva-badge">
-                        <span class="canva-name">${nom.substring(0,15)}</span>
-                        <span class="canva-pct">${((val/totalH)*100).toFixed(0)}%</span>
-                    </div>
-                `).join('');
-            }
+        // Inyectar badges en cada overlay — top del gráfico
+        const overlayConfig = {
+            ovIng:  { data: s.ing,  max: 12 },
+            ovProy: { data: s.proy, max: 15 },
+            ovAct:  { data: s.act,  max: 12 },
+        };
+        Object.entries(overlayConfig).forEach(([id, cfg]) => {
+            if(!$(id)) return;
+            const sorted = Object.entries(cfg.data).sort((a,b)=>b[1]-a[1]);
+            const pills = sorted.slice(0, cfg.max).map(([nom, val]) => {
+                const display   = nom.split(' | ')[0];
+                const truncated = display.length > 13 ? display.substring(0,12)+'…' : display;
+                return `<div class="canva-badge">
+                    <span class="canva-name">${truncated}</span>
+                    <span class="canva-pct">${((val/totalH)*100).toFixed(0)}%</span>
+                </div>`;
+            }).join('');
+            const label = `<span class="canva-overlay-label">Más relevantes</span>`;
+            $(id).innerHTML = sorted.length ? label + pills : '';
         });
 
         // Curva S Acumulada
@@ -1355,8 +1411,9 @@
         draw("cLine", ds, "#4facfe", true); // Curva S acumulada con nuevo draw
         
         if($('ovS')) {
-            $('ovS').innerHTML = `<div class="canva-badge" style="border-left:3px solid var(--secondary)">
-                <span class="canva-name">Acumulado Total</span>
+            $('ovS').innerHTML = `<span class="canva-overlay-label">Tendencia acumulada</span>
+                <div class="canva-badge" style="border:1px solid rgba(0,242,254,0.3)">
+                <span class="canva-name">Total acumulado</span>
                 <span class="canva-pct" style="background:var(--secondary)">${ac.toFixed(1)}h</span>
             </div>`;
         }
@@ -1610,25 +1667,16 @@
     }
 
 
-    // ── RESIZE OBSERVER PARA CANVAS ─────────────────
-    // Corrige el recorte de gráficos ajustando el canvas al ancho real del contenedor
+    // ── RESIZE — solo en cambio real de ventana, no en scroll/filter ──────
     function setupCanvasResize() {
-        const canvasIds = ['cIng','cProy','cAct','cLine'];
-        canvasIds.forEach(id => {
-            const cv = document.getElementById(id);
-            if(!cv) return;
-            const wrapper = cv.parentElement;
-            const ro = new ResizeObserver(() => {
-                const w = wrapper.clientWidth - 40;
-                if(w < 100) return;
-                const dpr = window.devicePixelRatio || 1;
-                cv.width  = Math.round(w * dpr);
-                cv.height = Math.round(w * 0.30 * dpr);
-                cv.style.width  = w + 'px';
-                cv.style.height = Math.round(w * 0.30) + 'px';
+        // SVG usa viewBox: escala automáticamente sin redibujar.
+        // Solo re-renderizamos si el ancho de la ventana cambia (no scroll, no filtro).
+        let lastW = window.innerWidth;
+        window.addEventListener('resize', () => {
+            if(Math.abs(window.innerWidth - lastW) > 40) {
+                lastW = window.innerWidth;
                 if(user) render();
-            });
-            ro.observe(wrapper);
+            }
         });
     }
 
@@ -1722,95 +1770,118 @@
         });
         cardKPIs += '</div></div>';
 
-        // ─── CARD: HH Ejecutadas vs Proyectadas — SVG premium estático ───
+        // ─── CARD: HH Ejecutadas vs Proyectadas — SVG 2 columnas compacto ───
         const hhRows = proyEntries.map(([cod, hEx]) => {
             const hProy = HH_PROYECTADAS[cod] || null;
-            const pct = hProy ? ((hEx/hProy)*100) : null;
+            const pct   = hProy ? ((hEx / hProy) * 100) : null;
             return { cod, hEx, hProy, pct };
         });
 
-        // Construir SVG de barras horizontales directamente (no canvas, no Chart.js)
-        const svgBarH  = 36;   // altura por fila
-        const svgPL    = 130;  // padding izquierdo (labels)
-        const svgPR    = 90;   // padding derecho (valores)
-        const svgPT    = 14;
-        const svgPB    = 14;
-        const svgW     = 700;
-        const svgH     = svgPT + hhRows.length * (svgBarH + 8) + svgPB;
-        const maxVal   = Math.max(...hhRows.map(r => Math.max(r.hEx, r.hProy||0)), 1);
-        const barZone  = svgW - svgPL - svgPR;
+        // Layout: 2 columnas de barras horizontales
+        const COL  = 2;
+        const ROWS = Math.ceil(hhRows.length / COL);
+        const ROW_H  = 24;   // altura por fila (compacto)
+        const ROW_G  = 5;    // gap entre filas
+        const svgPL  = 88;   // espacio para label izq
+        const svgPR  = 72;   // espacio para valor der
+        const svgPT  = 22;   // top (para grid labels)
+        const svgPB  = 28;   // bottom (leyenda)
+        const svgW   = 860;
+        const COL_W  = svgW / COL;
+        const BAR_W  = COL_W - svgPL - svgPR - 16; // ancho zona de barra por columna
+        const svgH   = svgPT + ROWS * (ROW_H + ROW_G) + svgPB;
 
-        let svgLines = '';
-        // Grid lines
-        [0, 0.25, 0.5, 0.75, 1].forEach(t => {
-            const x = svgPL + t * barZone;
-            svgLines += `<line x1="${x}" y1="${svgPT}" x2="${x}" y2="${svgH - svgPB}" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="4,4"/>`;
-            if(t > 0) svgLines += `<text x="${x}" y="${svgPT - 4}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.25)">${Math.round(maxVal*t)}h</text>`;
-        });
+        const maxVal = Math.max(...hhRows.map(r => Math.max(r.hEx, r.hProy || 0)), 1);
 
-        let svgRows = '';
+        // Defs globales
+        let hhDefs = '<defs>';
         hhRows.forEach((row, i) => {
-            const y     = svgPT + i * (svgBarH + 8);
-            const exW   = (row.hEx / maxVal) * barZone;
-            const prW   = row.hProy ? (row.hProy / maxVal) * barZone : 0;
-            const pct   = row.pct;
-            // Semáforo color
-            const clr   = !row.hProy ? '#4facfe' : pct >= 100 ? '#ff4b2b' : pct >= 75 ? '#ffa502' : '#2ecc71';
-            const glowId = `glow_${i}`;
-            // Gradiente por barra
-            svgRows += `<defs>
-                <linearGradient id="${glowId}" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="${clr}" stop-opacity="0.95"/>
-                    <stop offset="100%" stop-color="${clr}" stop-opacity="0.55"/>
-                </linearGradient>
-                <filter id="sf_${i}">
-                    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="${clr}" flood-opacity="0.35"/>
-                </filter>
-            </defs>`;
+            const clr = !row.hProy ? '#4facfe' : row.pct >= 100 ? '#ff4b2b' : row.pct >= 75 ? '#ffa502' : '#2ecc71';
+            hhDefs += `
+                <linearGradient id="hh_g${i}" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="${clr}" stop-opacity="0.92"/>
+                    <stop offset="100%" stop-color="${clr}" stop-opacity="0.5"/>
+                </linearGradient>`;
+        });
+        hhDefs += '</defs>';
 
-            // Barra proyectada (fondo)
-            if(prW > 0) {
-                svgRows += `<rect x="${svgPL}" y="${y + 4}" width="${prW}" height="${svgBarH - 8}" rx="4"
-                    fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;
+        // Grid lines por columna
+        let hhGrid = '';
+        for (let col = 0; col < COL; col++) {
+            const ox = col * COL_W + svgPL; // offset x de la zona de barras
+            [0.25, 0.5, 0.75, 1].forEach(t => {
+                const x = ox + t * BAR_W;
+                hhGrid += `<line x1="${x}" y1="${svgPT - 8}" x2="${x}" y2="${svgPT + ROWS*(ROW_H+ROW_G) - ROW_G}"
+                    stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-dasharray="3,4"/>`;
+                hhGrid += `<text x="${x}" y="${svgPT - 10}" text-anchor="middle" font-size="8"
+                    fill="rgba(255,255,255,0.2)" font-family="'Courier New',monospace">${Math.round(maxVal*t)}h</text>`;
+            });
+        }
+
+        // Separator vertical entre columnas
+        hhGrid += `<line x1="${svgW/2}" y1="${svgPT - 12}" x2="${svgW/2}" y2="${svgPT + ROWS*(ROW_H+ROW_G)}"
+            stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+
+        // Filas de barras
+        let hhBars = '';
+        hhRows.forEach((row, i) => {
+            const col  = i % COL;
+            const row_ = Math.floor(i / COL);
+            const ox   = col * COL_W + svgPL;
+            const y    = svgPT + row_ * (ROW_H + ROW_G);
+            const clr  = !row.hProy ? '#4facfe' : row.pct >= 100 ? '#ff4b2b' : row.pct >= 75 ? '#ffa502' : '#2ecc71';
+            const exW  = (row.hEx / maxVal) * BAR_W;
+            const prW  = row.hProy ? (row.hProy / maxVal) * BAR_W : 0;
+            const cy   = y + ROW_H / 2;
+
+            // Barra proyectada (fondo fantasma)
+            if (prW > 0) {
+                hhBars += `<rect x="${ox}" y="${y + 5}" width="${prW}" height="${ROW_H - 10}" rx="3"
+                    fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>`;
             }
             // Barra ejecutada
-            svgRows += `<rect x="${svgPL}" y="${y + 2}" width="${Math.max(exW, 2)}" height="${svgBarH - 4}" rx="5"
-                fill="url(#${glowId})" filter="url(#sf_${i})"/>`;
-            // Brillo interno
-            svgRows += `<rect x="${svgPL}" y="${y + 2}" width="${Math.min(exW * 0.4, 40)}" height="${(svgBarH - 4) / 2}" rx="3"
-                fill="rgba(255,255,255,0.12)"/>`;
+            hhBars += `<rect x="${ox}" y="${y + 3}" width="${Math.max(exW, 2)}" height="${ROW_H - 6}" rx="3"
+                fill="url(#hh_g${i})"/>`;
+            // Brillo
+            hhBars += `<rect x="${ox}" y="${y + 3}" width="${Math.min(exW * 0.35, 28)}" height="${(ROW_H-6)/2}" rx="2"
+                fill="rgba(255,255,255,0.1)"/>`;
 
-            // Label proyecto
-            svgRows += `<text x="${svgPL - 10}" y="${y + svgBarH/2 + 4}" text-anchor="end" font-size="11" font-weight="600"
-                fill="rgba(255,255,255,0.75)" font-family="'Segoe UI',system-ui,Arial">${row.cod}</text>`;
+            // Label proyecto (izquierda de la barra)
+            const lbl = row.cod.length > 10 ? row.cod.substring(0, 9) + '…' : row.cod;
+            hhBars += `<text x="${ox - 6}" y="${cy + 4}" text-anchor="end" font-size="9.5" font-weight="600"
+                fill="rgba(255,255,255,0.65)" font-family="'Segoe UI',system-ui,Arial">${lbl}</text>`;
 
-            // Valor ejecutado
-            svgRows += `<text x="${svgPL + exW + 8}" y="${y + svgBarH/2 + 4}" font-size="11" font-weight="700"
-                fill="${clr}" font-family="'Segoe UI',system-ui,Arial">${row.hEx.toFixed(1)}h${pct !== null ? ' · '+pct.toFixed(0)+'%' : ''}</text>`;
+            // Valor + % (derecha de la barra)
+            const valTxt = row.pct !== null
+                ? `${row.hEx.toFixed(0)}h · ${row.pct.toFixed(0)}%`
+                : `${row.hEx.toFixed(0)}h`;
+            hhBars += `<text x="${ox + exW + 6}" y="${cy + 4}" font-size="9" font-weight="700"
+                fill="${clr}" font-family="'Courier New',monospace">${valTxt}</text>`;
         });
 
-        // Leyenda
-        const legend = `
-            <rect x="${svgPL}" y="${svgH - svgPB + 2}" width="10" height="10" rx="2" fill="#00f2fe" opacity="0.8"/>
-            <text x="${svgPL + 14}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.4)" font-family="'Segoe UI',system-ui,Arial">HH Ejecutadas</text>
-            <rect x="${svgPL + 100}" y="${svgH - svgPB + 2}" width="10" height="10" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-            <text x="${svgPL + 114}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.4)" font-family="'Segoe UI',system-ui,Arial">HH Proyectadas</text>
-            <circle cx="${svgPL + 240}" cy="${svgH - svgPB + 7}" r="4" fill="#2ecc71"/>
-            <text x="${svgPL + 248}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">&lt;75%</text>
-            <circle cx="${svgPL + 290}" cy="${svgH - svgPB + 7}" r="4" fill="#ffa502"/>
-            <text x="${svgPL + 298}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">75–100%</text>
-            <circle cx="${svgPL + 352}" cy="${svgH - svgPB + 7}" r="4" fill="#ff4b2b"/>
-            <text x="${svgPL + 360}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">&gt;100%</text>
+        // Leyenda compacta en el footer
+        const hhLegY = svgPT + ROWS * (ROW_H + ROW_G) + 10;
+        const hhLegend = `
+            <rect x="${svgPL}" y="${hhLegY}" width="8" height="8" rx="2" fill="#4facfe" opacity="0.85"/>
+            <text x="${svgPL+12}" y="${hhLegY+8}" font-size="9" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">Ejecutadas</text>
+            <rect x="${svgPL+76}" y="${hhLegY}" width="8" height="8" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+            <text x="${svgPL+88}" y="${hhLegY+8}" font-size="9" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">Proyectadas</text>
+            <circle cx="${svgPL+166}" cy="${hhLegY+4}" r="3.5" fill="#2ecc71"/>
+            <text x="${svgPL+174}" y="${hhLegY+8}" font-size="9" fill="rgba(255,255,255,0.3)" font-family="'Segoe UI',system-ui,Arial">&lt;75%</text>
+            <circle cx="${svgPL+212}" cy="${hhLegY+4}" r="3.5" fill="#ffa502"/>
+            <text x="${svgPL+220}" y="${hhLegY+8}" font-size="9" fill="rgba(255,255,255,0.3)" font-family="'Segoe UI',system-ui,Arial">75–100%</text>
+            <circle cx="${svgPL+265}" cy="${hhLegY+4}" r="3.5" fill="#ff4b2b"/>
+            <text x="${svgPL+273}" y="${hhLegY+8}" font-size="9" fill="rgba(255,255,255,0.3)" font-family="'Segoe UI',system-ui,Arial">&gt;100%</text>
         `;
 
-        const hhSvg = `<svg viewBox="0 0 ${svgW} ${svgH + 20}" xmlns="http://www.w3.org/2000/svg"
-            style="width:100%;height:auto;display:block;overflow:visible;">
-            ${svgLines}${svgRows}${legend}
+        const hhSvg = `<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg"
+            style="width:100%;height:auto;display:block;">
+            ${hhDefs}${hhGrid}${hhBars}${hhLegend}
         </svg>`;
 
         let cardHH = `<div style="${cardCss}grid-column:1/-1">
             <p style="${hCss}">HH Ejecutadas vs. Proyectadas por Proyecto</p>
-            <div style="overflow-x:auto;padding:4px 0;">${hhSvg}</div>
+            ${hhSvg}
         </div>`;
 
         // ─── CARD: % tiempo por ingeniero — Chart.js donut ───
