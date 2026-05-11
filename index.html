@@ -837,6 +837,8 @@
     const POR_PAGINA = 10;
     let datosRender = [];
     let tabActiva = 'ing';
+    let sortCol = 'fecha';   // columna activa de orden
+    let sortAsc = false;     // false = más reciente primero
 
     function logout() { localStorage.removeItem("sesion_activa"); location.reload(); }
     function switchAuth(m) { 
@@ -955,7 +957,15 @@
             if($('fD').value) d=d.filter(r=>r.fecha>=$('fD').value);
             if($('fH').value) d=d.filter(r=>r.fecha<=$('fH').value);
         }
-        d.sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+        // Ordenamiento dinámico
+        d.sort((a,b) => {
+            let va = a[sortCol], vb = b[sortCol];
+            if(sortCol === 'fecha') { va = a.fecha; vb = b.fecha; }
+            else if(sortCol === 'horas') { va = a.horas; vb = b.horas; }
+            if(va < vb) return sortAsc ? -1 : 1;
+            if(va > vb) return sortAsc ?  1 : -1;
+            return 0;
+        });
         renderT(d); renderC(d); updateKPIs(d);
         if(user.rol==='pm') { updateProyFilter(); if(tabActiva==='pm') renderPMDashboard(d); }
     }
@@ -974,16 +984,39 @@
         animCount($('kpiEfi'), efi, 0, '%');
     }
 
+    function sortBy(col) {
+        if(sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = col !== 'fecha'; }
+        paginaActual = 0;
+        render();
+    }
+    window.sortBy = sortBy;
+
+    function sortArrow(col) {
+        if(sortCol !== col) return '<span style="opacity:0.25;font-size:0.8em;margin-left:4px">⇅</span>';
+        return sortAsc
+            ? '<span style="color:var(--secondary);margin-left:4px;font-size:0.85em">↑</span>'
+            : '<span style="color:var(--secondary);margin-left:4px;font-size:0.85em">↓</span>';
+    }
+
     function renderT(d) {
         datosRender = d;
-        // Si hay un filtro nuevo, volver a pág 0
         const totalPags = Math.ceil(d.length / POR_PAGINA) || 1;
         if(paginaActual >= totalPags) paginaActual = 0;
 
         const inicio = paginaActual * POR_PAGINA;
         const slice = d.slice(inicio, inicio + POR_PAGINA);
 
-        let h="<table><tr><th>Ingeniero</th><th>Proyecto</th><th>Fecha</th><th>Horas</th><th>Actividad</th><th>Acciones</th></tr>";
+        const thStyle = `style="cursor:pointer;user-select:none;white-space:nowrap;" onclick`;
+        let h = `<table>
+          <tr>
+            <th ${thStyle}="sortBy('ing')">Ingeniero${sortArrow('ing')}</th>
+            <th ${thStyle}="sortBy('proy')">Proyecto${sortArrow('proy')}</th>
+            <th ${thStyle}="sortBy('fecha')">Fecha${sortArrow('fecha')}</th>
+            <th ${thStyle}="sortBy('horas')">Horas${sortArrow('horas')}</th>
+            <th ${thStyle}="sortBy('act')">Actividad${sortArrow('act')}</th>
+            <th style="white-space:nowrap">Acciones</th>
+          </tr>`;
         slice.forEach(r=>{
             const c=r.horas>=META;
             const isFav = isFavorito(r);
@@ -1689,24 +1722,95 @@
         });
         cardKPIs += '</div></div>';
 
-        // ─── CARD: HH Ejecutadas vs Proyectadas — Chart.js barras horizontales ───
+        // ─── CARD: HH Ejecutadas vs Proyectadas — SVG premium estático ───
         const hhRows = proyEntries.map(([cod, hEx]) => {
             const hProy = HH_PROYECTADAS[cod] || null;
             const pct = hProy ? ((hEx/hProy)*100) : null;
             return { cod, hEx, hProy, pct };
         });
-        const hhCanvasId = 'chartHH_'+Date.now();
-        const hhH = Math.max(hhRows.length * 44 + 60, 180);
+
+        // Construir SVG de barras horizontales directamente (no canvas, no Chart.js)
+        const svgBarH  = 36;   // altura por fila
+        const svgPL    = 130;  // padding izquierdo (labels)
+        const svgPR    = 90;   // padding derecho (valores)
+        const svgPT    = 14;
+        const svgPB    = 14;
+        const svgW     = 700;
+        const svgH     = svgPT + hhRows.length * (svgBarH + 8) + svgPB;
+        const maxVal   = Math.max(...hhRows.map(r => Math.max(r.hEx, r.hProy||0)), 1);
+        const barZone  = svgW - svgPL - svgPR;
+
+        let svgLines = '';
+        // Grid lines
+        [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+            const x = svgPL + t * barZone;
+            svgLines += `<line x1="${x}" y1="${svgPT}" x2="${x}" y2="${svgH - svgPB}" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="4,4"/>`;
+            if(t > 0) svgLines += `<text x="${x}" y="${svgPT - 4}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.25)">${Math.round(maxVal*t)}h</text>`;
+        });
+
+        let svgRows = '';
+        hhRows.forEach((row, i) => {
+            const y     = svgPT + i * (svgBarH + 8);
+            const exW   = (row.hEx / maxVal) * barZone;
+            const prW   = row.hProy ? (row.hProy / maxVal) * barZone : 0;
+            const pct   = row.pct;
+            // Semáforo color
+            const clr   = !row.hProy ? '#4facfe' : pct >= 100 ? '#ff4b2b' : pct >= 75 ? '#ffa502' : '#2ecc71';
+            const glowId = `glow_${i}`;
+            // Gradiente por barra
+            svgRows += `<defs>
+                <linearGradient id="${glowId}" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="${clr}" stop-opacity="0.95"/>
+                    <stop offset="100%" stop-color="${clr}" stop-opacity="0.55"/>
+                </linearGradient>
+                <filter id="sf_${i}">
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="${clr}" flood-opacity="0.35"/>
+                </filter>
+            </defs>`;
+
+            // Barra proyectada (fondo)
+            if(prW > 0) {
+                svgRows += `<rect x="${svgPL}" y="${y + 4}" width="${prW}" height="${svgBarH - 8}" rx="4"
+                    fill="rgba(255,255,255,0.07)" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>`;
+            }
+            // Barra ejecutada
+            svgRows += `<rect x="${svgPL}" y="${y + 2}" width="${Math.max(exW, 2)}" height="${svgBarH - 4}" rx="5"
+                fill="url(#${glowId})" filter="url(#sf_${i})"/>`;
+            // Brillo interno
+            svgRows += `<rect x="${svgPL}" y="${y + 2}" width="${Math.min(exW * 0.4, 40)}" height="${(svgBarH - 4) / 2}" rx="3"
+                fill="rgba(255,255,255,0.12)"/>`;
+
+            // Label proyecto
+            svgRows += `<text x="${svgPL - 10}" y="${y + svgBarH/2 + 4}" text-anchor="end" font-size="11" font-weight="600"
+                fill="rgba(255,255,255,0.75)" font-family="'Segoe UI',system-ui,Arial">${row.cod}</text>`;
+
+            // Valor ejecutado
+            svgRows += `<text x="${svgPL + exW + 8}" y="${y + svgBarH/2 + 4}" font-size="11" font-weight="700"
+                fill="${clr}" font-family="'Segoe UI',system-ui,Arial">${row.hEx.toFixed(1)}h${pct !== null ? ' · '+pct.toFixed(0)+'%' : ''}</text>`;
+        });
+
+        // Leyenda
+        const legend = `
+            <rect x="${svgPL}" y="${svgH - svgPB + 2}" width="10" height="10" rx="2" fill="#00f2fe" opacity="0.8"/>
+            <text x="${svgPL + 14}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.4)" font-family="'Segoe UI',system-ui,Arial">HH Ejecutadas</text>
+            <rect x="${svgPL + 100}" y="${svgH - svgPB + 2}" width="10" height="10" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+            <text x="${svgPL + 114}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.4)" font-family="'Segoe UI',system-ui,Arial">HH Proyectadas</text>
+            <circle cx="${svgPL + 240}" cy="${svgH - svgPB + 7}" r="4" fill="#2ecc71"/>
+            <text x="${svgPL + 248}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">&lt;75%</text>
+            <circle cx="${svgPL + 290}" cy="${svgH - svgPB + 7}" r="4" fill="#ffa502"/>
+            <text x="${svgPL + 298}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">75–100%</text>
+            <circle cx="${svgPL + 352}" cy="${svgH - svgPB + 7}" r="4" fill="#ff4b2b"/>
+            <text x="${svgPL + 360}" y="${svgH - svgPB + 11}" font-size="10" fill="rgba(255,255,255,0.35)" font-family="'Segoe UI',system-ui,Arial">&gt;100%</text>
+        `;
+
+        const hhSvg = `<svg viewBox="0 0 ${svgW} ${svgH + 20}" xmlns="http://www.w3.org/2000/svg"
+            style="width:100%;height:auto;display:block;overflow:visible;">
+            ${svgLines}${svgRows}${legend}
+        </svg>`;
+
         let cardHH = `<div style="${cardCss}grid-column:1/-1">
             <p style="${hCss}">HH Ejecutadas vs. Proyectadas por Proyecto</p>
-            <div style="position:relative;width:100%;height:${hhH}px">
-                <canvas id="${hhCanvasId}" role="img" aria-label="Barras HH ejecutadas vs proyectadas por proyecto"></canvas>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:0.75em;color:rgba(255,255,255,0.5);">
-                <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#4facfe;display:inline-block"></span>HH Ejecutadas</span>
-                <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:rgba(255,255,255,0.18);display:inline-block"></span>HH Proyectadas</span>
-                <span style="display:flex;align-items:center;gap:5px;margin-left:auto;color:rgba(255,255,255,0.35);font-size:0.9em;font-style:italic">Semáforo: verde &lt;75% · amarillo 75–100% · rojo &gt;100%</span>
-            </div>
+            <div style="overflow-x:auto;padding:4px 0;">${hhSvg}</div>
         </div>`;
 
         // ─── CARD: % tiempo por ingeniero — Chart.js donut ───
@@ -1779,48 +1883,12 @@
         function buildCharts() {
             if(typeof Chart === 'undefined') return;
 
-            // Defaults globales oscuros
             Chart.defaults.color = 'rgba(255,255,255,0.45)';
             Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
             Chart.defaults.font.family = '"Segoe UI",system-ui,Arial';
             Chart.defaults.font.size = 11;
 
-            // ── Barras HH ejecutadas vs proyectadas ──
-            const hhEl = document.getElementById(hhCanvasId);
-            if(hhEl) {
-                const labels = hhRows.map(r=>r.cod);
-                const executed = hhRows.map(r=>r.hEx);
-                const projected = hhRows.map(r=>r.hProy);
-                const barColors = hhRows.map(r=>{
-                    if(!r.hProy) return '#4facfe';
-                    const p = r.pct;
-                    return p>=100?'rgba(255,75,43,0.85)':p>=75?'rgba(255,165,2,0.85)':'rgba(79,172,254,0.85)';
-                });
-                pmCharts.hh = new Chart(hhEl, {
-                    type:'bar',
-                    data:{
-                        labels,
-                        datasets:[
-                            { label:'HH Ejecutadas', data:executed, backgroundColor:barColors, borderRadius:6, borderSkipped:false, order:1 },
-                            { label:'HH Proyectadas', data:projected, backgroundColor:'rgba(255,255,255,0.1)', borderColor:'rgba(255,255,255,0.22)', borderWidth:1, borderRadius:6, borderSkipped:false, order:2 }
-                        ]
-                    },
-                    options:{
-                        indexAxis:'y', responsive:true, maintainAspectRatio:false,
-                        plugins:{ legend:{display:false}, tooltip:{ callbacks:{
-                            label: ctx=>{
-                                const row = hhRows[ctx.dataIndex];
-                                if(ctx.datasetIndex===0) return ' Ejecutado: '+ctx.parsed.x.toFixed(1)+'h'+(row.pct?' ('+row.pct.toFixed(1)+'% del proyectado)':'');
-                                return ' Proyectado: '+(ctx.parsed.x?ctx.parsed.x.toFixed(1)+'h':'N/D');
-                            }
-                        }, backgroundColor:'rgba(10,12,28,0.95)', borderColor:'rgba(79,172,254,0.3)', borderWidth:1, padding:12, cornerRadius:10}},
-                        scales:{
-                            x:{ grid:{color:'rgba(255,255,255,0.05)'}, ticks:{callback:v=>v+'h'} },
-                            y:{ grid:{display:false}, ticks:{font:{size:11},color:'rgba(255,255,255,0.6)'} }
-                        }
-                    }
-                });
-            }
+            // HH ejecutadas vs proyectadas → ahora es SVG, no necesita Chart.js
 
             // ── Donut ingenieros ──
             const ingEl = document.getElementById(ingDonutId);
