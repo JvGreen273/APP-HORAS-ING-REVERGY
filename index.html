@@ -858,25 +858,50 @@
     // --- LÓGICA CORE MANTENIDA ---
     async function syncCloud(nodo, data) {
         try {
-            const id = data.id || data.user;
-            await fetch(`${DB_URL}/${nodo}/${id}.json`, {
+            // Sanitizar ID: Firebase no permite '.' en claves — reemplazar por '_'
+            const rawId = data.id || data.user;
+            const id = String(rawId).replace(/\./g, '_');
+            const res = await fetch(`${DB_URL}/${nodo}/${id}.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...data, sync_ts: new Date().toISOString() })
             });
-        } catch (e) { console.warn("Offline"); }
+            if (!res.ok) {
+                const errText = await res.text().catch(() => res.status);
+                console.error(`Firebase write error [${nodo}/${id}]:`, res.status, errText);
+                setSyncDot(false);
+                toast(`⚠️ Firebase rechazó el guardado (${res.status}). Verifica las reglas de seguridad de la base de datos.`, 'error', 6000);
+                return false;
+            }
+            setSyncDot(true);
+            return true;
+        } catch (e) {
+            console.warn("Sin conexión o error de red:", e);
+            setSyncDot(false);
+            toast('⚠️ Sin conexión con Firebase. El registro quedó guardado localmente.', 'warning', 5000);
+            return false;
+        }
     }
 
     async function pullCloud() {
         try {
             const rAct = await fetch(`${DB_URL}/actividades.json`);
+            if (!rAct.ok) throw new Error(`HTTP ${rAct.status}`);
             const dAct = await rAct.json();
-            if(dAct) { dbR = Object.values(dAct); localStorage.setItem("db_registros", JSON.stringify(dbR)); }
+            if (dAct) {
+                const cloudR = Object.values(dAct);
+                // Merge: preservar registros locales que aún no llegaron a Firebase
+                const cloudIds = new Set(cloudR.map(r => String(r.id).replace(/\./g, '_')));
+                const localOnly = dbR.filter(r => !cloudIds.has(String(r.id).replace(/\./g, '_')));
+                dbR = [...cloudR, ...localOnly];
+                localStorage.setItem("db_registros", JSON.stringify(dbR));
+            }
             const rUsr = await fetch(`${DB_URL}/usuarios.json`);
+            if (!rUsr.ok) throw new Error(`HTTP ${rUsr.status}`);
             const dUsr = await rUsr.json();
             if(dUsr) { dbU = Object.values(dUsr); localStorage.setItem("db_usuarios", JSON.stringify(dbU)); }
             setSyncDot(true);
-        } catch (e) { console.error("Cloud Error"); setSyncDot(false); }
+        } catch (e) { console.error("Cloud Error:", e); setSyncDot(false); }
     }
 
     let dbU = JSON.parse(localStorage.getItem("db_usuarios")) || [];
@@ -2533,7 +2558,8 @@
         const registros = [];
 
         calSelected.forEach(fecha => {
-            const r = { id: Date.now() + Math.random(), ing, proy: proyFinal, fecha, horas: h, act, desc };
+            // ID seguro para Firebase: sin punto decimal (Date.now() + Math.random() producía floats inválidos como clave)
+            const r = { id: Date.now() + '_' + Math.floor(Math.random() * 100000), ing, proy: proyFinal, fecha, horas: h, act, desc };
             dbR.push(r);
             registros.push(r);
         });
