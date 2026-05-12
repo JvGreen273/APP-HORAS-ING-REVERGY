@@ -567,6 +567,11 @@
                             <option value="BSL6">BSL6</option>
                             <option value="ING">ING</option>
                             <option value="SST-ING">SST-ING</option>
+                            <option value="VND-01">VND-01 - Venados</option>
+                            <option value="PRAD-01">PRAD-01 - Pradera</option>
+                            <option value="ADM">ADM - Administracion</option>
+                            <option value="DDP">DDP - Desarrollo de Proyectos</option>
+                            <option value="OMY">OMY - O&amp;M</option>
                             <option value="VCC">🏖 VCC - Vacaciones</option>
                         </select>
                     </div>
@@ -584,6 +589,14 @@
                             <option>Revision Informacion Previa</option>
                             <option>Diseño de Ingenieria</option>
                             <option>Atencion de comentarios</option>
+                            <option>Revision de Polizas</option>
+                            <option>Gestion de Contratos</option>
+                            <option>Revision Documental</option>
+                            <option>PQR</option>
+                            <option>Tutela</option>
+                            <option>Certificacion de Hito</option>
+                            <option>Capacitacion</option>
+                            <option>Debida Diligencia</option>
                         </select>
                     </div>
                     <div>
@@ -766,6 +779,11 @@
             <option value="BSL6">BSL6 - Bosques Solares de Los Llanos 6</option>
             <option value="ING">ING</option>
             <option value="SST-ING">SST-ING</option>
+            <option value="VND-01">VND-01 - Venados</option>
+            <option value="PRAD-01">PRAD-01 - Pradera</option>
+            <option value="ADM">ADM - Administracion</option>
+            <option value="DDP">DDP - Desarrollo de Proyectos</option>
+            <option value="OMY">OMY - O&amp;M</option>
             <option value="VCC">🏖 VCC - Vacaciones</option>
         </select>
     </div>
@@ -782,6 +800,14 @@
         <option>Revision Informacion Previa</option>
         <option>Diseño de Ingenieria</option>
         <option>Atencion de comentarios</option>
+        <option>Revision de Polizas</option>
+        <option>Gestion de Contratos</option>
+        <option>Revision Documental</option>
+        <option>PQR</option>
+        <option>Tutela</option>
+        <option>Certificacion de Hito</option>
+        <option>Capacitacion</option>
+        <option>Debida Diligencia</option>
     </select>
 
     <!-- Horas rápidas -->
@@ -943,6 +969,11 @@
         else if (principal === "BSL6") opciones = ["BSL6-Gestión", "BSL6-Ingeniería", "BSL6-MesaTrabajo", "BSL6-Previos"];
         else if (principal === "ING") opciones = ["GST-ING", "OFC-ING", "CLD-ING", "OFT-ING", "CAP-ING", "LCC"];
         else if (principal === "SST-ING") opciones = ["GST-SST","CAP-SST","DOC-SST","AUD-SST","INS-SST"];
+        else if (principal === "VND-01") opciones = ["VND-01-Polizas","VND-01-Gestion","VND-01-Contratos"];
+        else if (principal === "PRAD-01") opciones = ["PRAD-01-Contratos","PRAD-01-Revision","PRAD-01-P+C"];
+        else if (principal === "ADM") opciones = ["ADM-RRHH","ADM-SST","ADM-CAP","ADM-OFC","ADM-LGL","ADM-FIN"];
+        else if (principal === "DDP") opciones = ["DDP-NDA","DDP-Contratos","DDP-Checklist","DDP-P+C"];
+        else if (principal === "OMY") opciones = ["OMY-Polizas","OMY-Gestion","OMY-P+C"];
         else if (principal === "VCC") opciones = ["VCC-DIA"];
         else if (principal !== "") opciones = [principal + "-P+C"];
         opciones.forEach(opt => {
@@ -1590,6 +1621,11 @@
         else if(principal === 'BSL6') opts = ['BSL6-Gestión','BSL6-Ingeniería','BSL6-MesaTrabajo','BSL6-Previos'];
         else if(principal === 'ING') opts = ['GST-ING','OFC-ING','CLD-ING','OFT-ING','CAP-ING','LCC'];
         else if (principal === 'SST-ING') opts = ['GST-SST','CAP-SST','DOC-SST','AUD-SST','INS-SST'];
+        else if(principal === 'VND-01') opts = ['VND-01-Polizas','VND-01-Gestion','VND-01-Contratos'];
+        else if(principal === 'PRAD-01') opts = ['PRAD-01-Contratos','PRAD-01-Revision','PRAD-01-P+C'];
+        else if(principal === 'ADM') opts = ['ADM-RRHH','ADM-SST','ADM-CAP','ADM-OFC','ADM-LGL','ADM-FIN'];
+        else if(principal === 'DDP') opts = ['DDP-NDA','DDP-Contratos','DDP-Checklist','DDP-P+C'];
+        else if(principal === 'OMY') opts = ['OMY-Polizas','OMY-Gestion','OMY-P+C'];
         else if(principal === 'VCC') opts = ['VCC-DIA'];
         else if(principal) opts = [principal+'-P+C'];
         opts.forEach(o => { const el = document.createElement('option'); el.value=o; el.textContent=o; sub.appendChild(el); });
@@ -1697,6 +1733,11 @@
         'DD-ATL':      186.90,
         'DD-KAI':      144.71,
         'DD-CFM':      298.42,
+        'VND-01':        null,
+        'PRAD-01':       null,
+        'ADM':           null,
+        'DDP':           null,
+        'OMY':           null,
     };
 
     // ── PM DASHBOARD — Chart.js premium ─────────────────────────────────
@@ -2057,7 +2098,12 @@
         'DD-KAI':      'DD KAI',
         'DD-CFM':      '932 SUN FACTORY CFM',
         'ING':         'CO0030002 INGENIERIA',
-        'SST-ING':     'SST-ING'
+        'SST-ING':     'SST-ING',
+        'VND-01':      'CO VENADOS',
+        'PRAD-01':     'CO PRADERA',
+        'ADM':         'CO0030001 ADMINISTRACION',
+        'DDP':         'CO0030003 DESARROLLO PROYECTOS',
+        'OMY':         'CO0030004 OPERACION Y MANTENIMIENTO',
     };
     const MESES_ES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
     function getMesNombre(yyyy_mm) {
@@ -2321,6 +2367,24 @@
             XLSX.utils.book_append_sheet(wb, wsRes, 'RESUMEN ANUAL');
         }
 
+        // ── Hoja DETALLE: todos los registros individuales (sin tildes, compatible con nómina) ──
+        const detalleRows = [['Ingeniero', 'Proyecto', 'Codigo', 'Fecha', 'Horas', 'Actividad', 'Descripcion']];
+        registros.sort((a,b) => (a.fecha||'').localeCompare(b.fecha||'')).forEach(r => {
+            const cod = r.proy.split(' | ')[0].trim();
+            detalleRows.push([
+                limpiarTildes(r.ing || ''),
+                limpiarTildes(r.proy || ''),
+                limpiarTildes(cod),
+                r.fecha || '',
+                r.horas || 0,
+                limpiarTildes(r.act || ''),
+                limpiarTildes(r.desc || '')
+            ]);
+        });
+        const wsDetalle = XLSX.utils.aoa_to_sheet(detalleRows);
+        wsDetalle['!cols'] = [{wch:18},{wch:32},{wch:14},{wch:12},{wch:8},{wch:26},{wch:40}];
+        XLSX.utils.book_append_sheet(wb, wsDetalle, 'DETALLE');
+
         const anio = new Date().getFullYear();
         const filename = esPM ? `Nomina_Ingenieria_${anio}.xlsx` : `Nomina_${user.user}_${anio}.xlsx`;
         XLSX.writeFile(wb, filename);
@@ -2351,6 +2415,11 @@
         else if(principal === 'BSL6') opts = ['BSL6-Gestión','BSL6-Ingeniería','BSL6-MesaTrabajo','BSL6-Previos'];
         else if(principal === 'ING') opts = ['GST-ING','OFC-ING','CLD-ING','OFT-ING','CAP-ING','LCC'];
         else if(principal === 'SST-ING') opts = ['GST-SST','CAP-SST','DOC-SST','AUD-SST','INS-SST'];
+        else if(principal === 'VND-01') opts = ['VND-01-Polizas','VND-01-Gestion','VND-01-Contratos'];
+        else if(principal === 'PRAD-01') opts = ['PRAD-01-Contratos','PRAD-01-Revision','PRAD-01-P+C'];
+        else if(principal === 'ADM') opts = ['ADM-RRHH','ADM-SST','ADM-CAP','ADM-OFC','ADM-LGL','ADM-FIN'];
+        else if(principal === 'DDP') opts = ['DDP-NDA','DDP-Contratos','DDP-Checklist','DDP-P+C'];
+        else if(principal === 'OMY') opts = ['OMY-Polizas','OMY-Gestion','OMY-P+C'];
         else if(principal === 'VCC') opts = ['VCC-DIA'];
         else if(principal) opts = [principal+'-P+C'];
         opts.forEach(o => { const el=document.createElement('option'); el.value=o; el.textContent=o; sub.appendChild(el); });
