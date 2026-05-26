@@ -1101,9 +1101,9 @@
             const isFav = isFavorito(r);
             h+=`<tr><td>${r.ing}</td><td>${r.proy}</td><td>${r.fecha}</td><td class="${c?'meta-cumplida':'meta-baja'}">${r.horas}h</td><td>${r.act}</td>
             <td style="display:flex;gap:4px;align-items:center;">
-              <button class="btn-fav ${isFav?'saved':''}" title="${isFav?'Quitar favorito':'Guardar como favorito'}" onclick="toggleFav(${r.id})">${isFav?'⭐':'☆'}</button>
-              <button onclick="editR(${r.id})" style="padding:5px; width:auto">✏️</button>
-              <button onclick="delR(${r.id})" style="background:var(--danger);padding:5px; width:auto">🗑️</button>
+              <button class="btn-fav ${isFav?'saved':''}" title="${isFav?'Quitar favorito':'Guardar como favorito'}" onclick="toggleFav('${r.id}')">${isFav?'⭐':'☆'}</button>
+              <button onclick="editR('${r.id}')" style="padding:5px; width:auto">✏️</button>
+              <button onclick="delR('${r.id}')" style="background:var(--danger);padding:5px; width:auto">🗑️</button>
             </td></tr>`;
         });
         if(!slice.length) h += '<tr><td colspan="6" style="text-align:center;color:#666;padding:30px">Sin registros</td></tr>';
@@ -1125,14 +1125,15 @@
     };
 
     window.editR=id=>{ 
-        const r=dbR.find(x=>x.id===id); $('ingSel').value=r.ing; 
+        const r=dbR.find(x=>String(x.id)===String(id)); if(!r) return;
+        $('ingSel').value=r.ing; 
         const p=r.proy.split(" | "); $('codProy').value=p[0]||""; actualizarSubmenu(); $('codPC').value=p[1]||"";
-        $('fecha').value=r.fecha; $('horas').value=r.horas; $('act').value=r.act; $('desc').value=r.desc; editId=id; 
+        $('fecha').value=r.fecha; $('horas').value=r.horas; $('act').value=r.act; $('desc').value=r.desc; editId=r.id; 
     };
 
     window.delR=async id=>{ 
         if(confirm("¿Seguro que deseas eliminar este registro?")){ 
-            dbR=dbR.filter(x=>x.id!==id); localStorage.setItem("db_registros",JSON.stringify(dbR)); 
+            dbR=dbR.filter(x=>String(x.id)!==String(id)); localStorage.setItem("db_registros",JSON.stringify(dbR)); 
             await fetch(`${DB_URL}/actividades/${id}.json`, { method: 'DELETE' }); render(); 
         }
     };
@@ -1485,7 +1486,7 @@
     }
 
     window.toggleFav = function(id) {
-        const r = dbR.find(x => x.id === id);
+        const r = dbR.find(x => String(x.id) === String(id));
         if (!r) return;
         let favs = getFavs();
         const idx = favs.findIndex(f => f.proy === r.proy && f.act === r.act && f.horas === r.horas);
